@@ -53,7 +53,7 @@ import { getDatabase } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-
             <div style="display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 10px;">
               
                 <button id="mesAnterior" class="botonMes">←</button>
-                <h2 id="tituloMes" style="margin: 0; color: orange !important;">Septiembre 2025</h2>
+                <h2 id="tituloMes" style="margin: 0; color: yellow !important;">Septiembre 2025</h2>
                 <button id="mesSiguiente" class="botonMes">→</button>
             </div>
         </div>
@@ -418,7 +418,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <br><br>
                 <button style="background-color: purple;" onclick="cerrarModal('modal-control');borrarTodasLasHorasEnPantalla()">🧹 borrar TODAS las reservas</button>
                 <br><br>
-                <button onclick="actiwar();cerrarModal('modal-control');"  style="border: 2px solid white; color: #000; background: orange; text-shadow: #000 3px 3px 5px;" id="activarBloqueoDias">🔒 Marcar Días cerrados 1x1</button>
+                <button onclick="actiwar();cerrarModal('modal-control');"  style="border: 2px solid white; color: #000; background: yellow; text-shadow: #000 3px 3px 5px;" id="activarBloqueoDias">🔒 Marcar Días cerrados 1x1</button>
                 <button type="button" onclick="mostrarX();" style="border: 2px solid white; color: #000; background: lightslategrey; text-shadow: #000 3px 3px 5px;"  id="abrirVentanaVX"><span style="color: red;">CERRAR</span><span style="color: #fff;"> /</span>
                 <span style="color: green; text-shadow: #000 2px 2px 5px;">ABRIR</span> todos los...
 </button>
@@ -857,9 +857,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 <br>
                 <div id="botones-horarios-predeterminados" style="display: flex; flex-direction: column; gap: 5px;">
                   <button onclick="cerrarModal('modal-configuracion-horarios')">Cerrar</button>
-                                    <button  id="boton-horario-semana" style="background-color: orange; border: 2px solid black;">Horario de Semana</button>
+                                    <button  id="boton-horario-semana" style="background-color: yellow; border: 2px solid black;">Horario de Semana</button>
                 <button onclick="guardarHorarioPersonalizado()"style="background-color: green; border: 2px solid black;">Guardar Horario</button>
-                    <button  id="boton-horario-sabado" style="background-color: orange; border: 2px solid black;" hidden>Horario de Sábado</button>
+                    <button  id="boton-horario-sabado" style="background-color: yellow; border: 2px solid black;" hidden>Horario de Sábado</button>
                     <button hidden id="boton-horario-cerrado">Día Cerrado</button>
                 </div>
                 <hr>
@@ -908,7 +908,7 @@ document.addEventListener('DOMContentLoaded', function() {
             /* Estilos para el título animado */
 .titulo-animado {
     /* Estilos base que ya tienes o quieres */
-    color: orangered;
+    color: yellowred;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* Sombra más definida */
     font-size: 27px !important; /* Un poco más grande para que la animación sea visible */
     
@@ -938,7 +938,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div style="background-color: #303030 !important; margin-top: 10px;"  class="contenidoModal">
                 <span id="cerrarVentana" class="cerrarModal">Cerrar</span>
                 <br>
-                <h3 id="tituloVentana" class="titulo-animado" style="color: orangered; text-shadow: 1px 1px 1px #000;"></h3>
+                <h3 id="tituloVentana" class="titulo-animado" style="color: yellowred; text-shadow: 1px 1px 1px #000;"></h3>
                 <h3 style="color: #fff      ;">Selecciona la hora</h3>
                 <div id="horariosDisponibles"></div>
             </div>
@@ -1186,7 +1186,7 @@ function ocultarBotonBorrar() {
     grid-template-columns: repeat(7, 1fr);
     gap: 6px; 
     font-weight: 700;
-    color: orange;
+    color: yellow;
       text-shadow: 3px 0px 30px #fff;
     /* ... (otros estilos) ... */
     
