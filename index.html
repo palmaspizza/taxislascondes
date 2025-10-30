@@ -2683,26 +2683,15 @@ setTimeout(() => {
 
 function reservarHora() {
     try {
-      const hora = document.getElementById("hora").value;
+    const fecha = document.getElementById("fecha").value;
+const hora = document.getElementById("hora").value;
 const nombre = document.getElementById("nombre").value.trim();
-const fecha = document.getElementById("fecha").value;
-
-console.log("Valores capturados:", {
-  nombre: document.getElementById("nombre").value,
-  fecha: document.getElementById("fecha").value,
-  hora: document.getElementById("hora").value,
-  barbero: barberoSeleccionado
-});
 
         if (!fecha || !hora || !nombre || !barberoSeleccionado) {
             alert("Error: faltan campos o el barbero no está definido.");
             return;
         }
 
-        if (!fecha || !hora || !nombre) {
-            alert("Completa todos los campos: nombre, fecha y hora");
-            return;
-        }
 
        const idBloque = `${fecha}-${hora}`;
 const reservasRef = firebase.database().ref(`reservas/${barberoSeleccionado}`);
@@ -2730,8 +2719,7 @@ enviarMensajeWhatsApp(nombre, fecha, hora);
     } catch (error) {
         console.error("Error en reservarHora:", error);
         alert("Ocurrió un error al intentar reservar. Revisa la consola para más detalles.");
-   console.error("Error en reservarHora:", error?.message || error, error);
- }
+    }
 }
 
         function cerrarModal(id) {
@@ -2930,6 +2918,8 @@ function mostrarBloquesHorario(fecha, horarioDelDia, horasReservadas) {
             bloque.textContent = `✅ ${hora}`;
             bloque.onclick = () => {
                 document.getElementById("hora").value = hora;
+                const fechaInput = document.getElementById("fecha");
+
                 fechaInput.value = fecha;
 
                 const nuevaReserva = {
@@ -2955,12 +2945,16 @@ function mostrarBloquesHorario(fecha, horarioDelDia, horasReservadas) {
 
     ventanaHorarios.style.display = "block";
 }
+        let fecha = document.getElementById("fecha").value;
+let hora = document.getElementById("hora").value;
+let nombre = document.getElementById("nombre").value;
 
 function enviarMensajeWhatsApp(nombre, fecha, hora) {
 
     if (!nombre || !fecha || !hora || !barberoSeleccionado) {
         alert("Faltan datos para enviar el mensaje de WhatsApp.");
         return;
+
     }
 
     const numeroDestino = "56954527837"; // tu número de WhatsApp
@@ -2968,7 +2962,7 @@ function enviarMensajeWhatsApp(nombre, fecha, hora) {
     const url = `https://wa.me/${numeroDestino}?text=${encodeURIComponent(mensaje)}`;
     window.open(url, "_blank");
 }
-   
+
 
 
         // NUEVA FUNCIONALIDAD: GESTIÓN DE HORARIOS PERSONALIZADOS
