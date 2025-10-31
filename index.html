@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reservas Barbería</title>
+    <title>TAXIS | Las Condes</title>
     <link rel="stylesheet" href="styleone.css">
    
-    <link rel="icon" href="https://i.ibb.co/JFrnTqWc/c4497cf0-2f10-43bf-b5ac-6c232c4d0e18.jpg" type="image/x-icon">
-<meta property="og:title" content="Barbería James">
-<meta property="og:description" content="Reservar Hora">
-<meta property="og:image" content="https://i.ibb.co/JFrnTqWc/c4497cf0-2f10-43bf-b5ac-6c232c4d0e18.jpg">
+    <link rel="icon" href="https://i.ibb.co/m5WDvjFm/imagen-2025-10-22-173714897.png" type="image/x-icon">
+<meta property="og:title" content="TAXIS | Las Condes">
+<meta property="og:description" content="Reservar">
+<meta property="og:image" content="https://i.ibb.co/m5WDvjFm/imagen-2025-10-22-173714897.png">
 <meta property="og:type" content="website">
 
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -19,11 +19,15 @@
 
 <!-- Firebase Messaging -->
 <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-messaging.js"></script>
+<script>
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import { getDatabase } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
 
+</script>
 </head>
 <body>
     
-    <!-- REMPLAZAR: "Barbería James" POR "EL NOMBRE DE LABARBER" -->
+    <!-- REMPLAZAR: "TAXIS | LAS CONDES" POR "EL NOMBRE DE LABARBER" -->
     
     
     <!-- ESCRIBIR: "CAMBIAR HORARIOS" PARA CAMBIAR LOS HORARIOS DE TODOS LOS DÍAS -->
@@ -32,13 +36,13 @@
 
 <!-- LOGO -->
 <!-- REMPLAZAR ESTE LINK POR EL LINK DEL LOGO: -->
-<!-- "https://i.ibb.co/JFrnTqWc/c4497cf0-2f10-43bf-b5ac-6c232c4d0e18.jpg" -->
+<!-- "https://i.ibb.co/m5WDvjFm/imagen-2025-10-22-173714897.png" -->
 
 <div class="container">
         <div id="logo" style="
             width: 200px;
             height: 200px;
-            background-image: url('https://i.ibb.co/JFrnTqWc/c4497cf0-2f10-43bf-b5ac-6c232c4d0e18.jpg');
+            background-image: url('https://i.ibb.co/m5WDvjFm/imagen-2025-10-22-173714897.png');
             background-size: cover;
             background-position: center;
             border-radius: 50%;
@@ -49,35 +53,12 @@
             <div style="display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 10px;">
               
                 <button id="mesAnterior" class="botonMes">←</button>
-                <h2 id="tituloMes" style="margin: 0; color: orange !important;">Septiembre 2025</h2>
+                <h2 id="tituloMes" style="margin: 0; color: yellow !important;">Septiembre 2025</h2>
                 <button id="mesSiguiente" class="botonMes">→</button>
             </div>
         </div>
         <button id="solicitar" hidden>Solicitar notificaciones</button>
 <script>
-
-    function migrarReservasAntiguas() {
-  reservasRef.once("value", snapshot => {
-    snapshot.forEach(child => {
-      const key = child.key;
-      const value = child.val();
-
-      // Detecta si es una reserva antigua (sin barbero)
-      if (!["JAMES", "BRYAN", "BARBERO3"].includes(key)) {
-        const fecha = key;
-        const horas = value;
-
-        // Migrar a JAMES por defecto
-        db.ref(`reservas/JAMES/${fecha}`).set(horas);
-        db.ref(`reservas/${fecha}`).remove();
-        console.log(`Migrada reserva antigua del ${fecha} a JAMES`);
-      }
-    });
-  });
-}
-
-
-
   async function enviar() {
     try {
       const response = await window.fetch('http://localhost:3000/enviar-notificaciones', {
@@ -92,31 +73,16 @@
       console.error('Error al enviar la notificación:', error);
     }
   }
-
-
-  function revertirReservasAJAMES() {
-  const jamesRef = db.ref("reservas/JAMES");
-
-  jamesRef.once("value", snapshot => {
-    snapshot.forEach(reservaSnap => {
-      const reserva = reservaSnap.val();
-
-      // Guardar en la raíz de reservas/
-      db.ref("reservas").push(reserva);
-
-      // Eliminar la original (opcional, solo si estás seguro)
-      // reservaSnap.ref.remove();
-    });
-
-    console.log("Reservas migradas de JAMES a raíz de reservas/");
-  });
-}
 </script>
 
-<button onclick="enviar()" hidden>Enviar notificación</button>
-     Selecciona un día
+      
+
+        Selecciona un día
       <div class="dias-semana"></div>
 <div id="cuadroCalendario"></div>
+<br><br><br>
+<h1 style="color: red !important;">⛔Reservadas⛔</h1>
+<div id="reservas-lista"></div>
     <script>
 document.getElementById('solicitar').addEventListener('click', async () => {
   try {
@@ -209,7 +175,7 @@ document.getElementById('solicitar').addEventListener('click', async () => {
 
 
 
-           const horasReservadas = reservasPorBarbero[barberoSeleccionado]?.[fecha] || [];
+                const horasReservadas = reservasPorDia[fechaActual] || [];
 
 
                 const estaBloqueado = diasBloqueados.includes(fechaActual) || horarioDelDia.length === 0;
@@ -448,13 +414,13 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
         <div id="modal-control" class="ventana-secreta fantasma">
             <div class="caja-misteriosa">
-                <h3>Control Barbería</h3>
-                <br><br>
+                <h3>Control TAXIS</h3>
+   
                 <button style="background-color: blue;" onclick="activarModoHorarios();">⚙️ Gestionar Horarios por Día</button>
                 <br><br>
                 <button style="background-color: purple;" onclick="cerrarModal('modal-control');borrarTodasLasHorasEnPantalla()">🧹 borrar TODAS las reservas</button>
                 <br><br>
-                <button onclick="actiwar();cerrarModal('modal-control');"  style="border: 2px solid white; color: #000; background: orange; text-shadow: #000 3px 3px 5px;" id="activarBloqueoDias">🔒 Marcar Días cerrados 1x1</button>
+                <button onclick="actiwar();cerrarModal('modal-control');"  style="border: 2px solid white; color: #000; background: yellow; text-shadow: #000 3px 3px 5px;" id="activarBloqueoDias">🔒 Marcar Días cerrados 1x1</button>
                 <button type="button" onclick="mostrarX();" style="border: 2px solid white; color: #000; background: lightslategrey; text-shadow: #000 3px 3px 5px;"  id="abrirVentanaVX"><span style="color: red;">CERRAR</span><span style="color: #fff;"> /</span>
                 <span style="color: green; text-shadow: #000 2px 2px 5px;">ABRIR</span> todos los...
 </button>
@@ -784,7 +750,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const fechaCelda = new Date(anio, mes - 1, dia);
                 const diaSemana = fechaCelda.getDay();
 
-                const horasReservadas = reservasPorBarbero[barberoSeleccionado]?.[fechaActual] || [];
+                const horasReservadas = reservasPorDia[fechaActual] || [];
                 
                 const estaBloqueado = diasBloqueados.includes(fechaActual) || horarioDelDia.length === 0 || diasDeLaSemanaBloqueados.includes(diaSemana);
                 const estaOcupado = horasReservadas.length >= horarioDelDia.length;
@@ -893,9 +859,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 <br>
                 <div id="botones-horarios-predeterminados" style="display: flex; flex-direction: column; gap: 5px;">
                   <button onclick="cerrarModal('modal-configuracion-horarios')">Cerrar</button>
-                                    <button  id="boton-horario-semana" style="background-color: orange; border: 2px solid black;">Horario de Semana</button>
+                                    <button  id="boton-horario-semana" style="background-color: yellow; border: 2px solid black;">Horario de Semana</button>
                 <button onclick="guardarHorarioPersonalizado()"style="background-color: green; border: 2px solid black;">Guardar Horario</button>
-                    <button  id="boton-horario-sabado" style="background-color: orange; border: 2px solid black;" hidden>Horario de Sábado</button>
+                    <button  id="boton-horario-sabado" style="background-color: yellow; border: 2px solid black;" hidden>Horario de Sábado</button>
                     <button hidden id="boton-horario-cerrado">Día Cerrado</button>
                 </div>
                 <hr>
@@ -914,14 +880,15 @@ document.addEventListener('DOMContentLoaded', function() {
                <form action="">
                  <input type="text" id="mensaje-cierre" placeholder="Escribe tu mensaje aquí">
                 <br><br>
-                <button type="submit" onclick="guardarMensajeCierre()">Aceptar</button>
+                <button type="button" onclick="guardarMensajeCierre()">Aceptar</button>
                </form>
             </div>
 
         </div>
 
 
-        <input type="date" id="fecha" hidden required>
+
+        <input type="date" id="fecha" hidden class="" required>
         
         <center>
             <input hidden type="time" id="hora">
@@ -943,7 +910,7 @@ document.addEventListener('DOMContentLoaded', function() {
             /* Estilos para el título animado */
 .titulo-animado {
     /* Estilos base que ya tienes o quieres */
-    color: gold !important;
+    color: yellowred;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* Sombra más definida */
     font-size: 27px !important; /* Un poco más grande para que la animación sea visible */
     
@@ -971,101 +938,86 @@ document.addEventListener('DOMContentLoaded', function() {
         </style>
         <div id="modal-horarios" class="modalBarberia">
             <div style="background-color: #303030 !important; margin-top: 10px;"  class="contenidoModal">
-                <span id="cerrarVentana" class="cerrarModal" onclick="document.getElementById('modal-horarios').style.display='none';">Cerrar</span>
+                <span id="cerrarVentana" class="cerrarModal">Cerrar</span>
                 <br>
-               
-                <h3 id="tituloVentana" class="titulo-animado" style="color: orangered; text-shadow: 1px 1px 1px #000;"></h3>
-              <br><br>
-               <h3 style="color: #fff;">Selecciona tu Barbero</h3><br>
-               
-                <button onclick="scrollToAncla('seccion-james')"  class="barberbutton" type="button">JAMES</button> <button  onclick="scrollToAncla('seccion-james')" class="barberbutton" type="button">BRYAN</button> <button onclick="scrollToAncla('seccion-james')"  class="barberbutton" type="button">BARBERO3</button>
-               <br><br><br>
-               <div id="seccion-james">
-                
-              
-               <h3 style="color: #fff      ;">Selecciona la hora</h3><br>
-                <div id="horariosDisponibles"></div>
-            </div>
-             </div>
-        </div>
-
-<script>
-  const botonesBarberos = document.querySelectorAll(".barberbutton");
-
-  botonesBarberos.forEach(boton => {
-    boton.addEventListener("click", () => {
-      botonesBarberos.forEach(b => b.classList.remove("activo"));
-      boton.classList.add("activo");
-    });
-  });
-</script>
-
+                <h3 id="tituloVentana" class="titulo-animado" style="color: yellowred; text-shadow: 1px 1px 1px #000;"></h3>
+                <h3 style="color: #fff      ;">Selecciona la hora</h3>
+               <div id="horasDisponibles"></div>
 <style>
-    .barberbutton {
-  background-color: #000;
-  color: #FFD700;
-  border: 2px solid #FFD700;
-  padding: 10px 20px;
-  font-family: 'Cinzel', serif; /* Fuente elegante, puedes cambiarla */
-  font-size: 18px;
-  letter-spacing: 1px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  z-index: 1;
-  animation: pulseGlow 2s infinite;
+  .hidden {
+  display: none;
 }
-
-.barberbutton:hover {
-  background-color: #111;
-  box-shadow: 0 0 15px rgba(255, 215, 0, 0.9);
-  transform: scale(1.05);
+#modal-autos {
+  position: fixed;
+  top: 20%;
+  left: 20%;
+  background: white;
+  padding: 20px;
+  border: 2px solid black;
+  z-index: 1000;
 }
-
-@keyframes pulseGlow {
-  0% {
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.9);
-  }
-  100% {
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
-  }
-}
-.barberbutton {
-  background-color: #000;
-  color: #FFD700;
-  border: 2px solid #FFD700;
-  padding: 10px 20px;
-  font-family: 'Cinzel', serif;
-  font-size: 18px;
-  border-radius: 8px;
+#botones-autos button {
   margin: 5px;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  animation: pulseGlow 2s infinite;
+  padding: 10px;
 }
-
-.barberbutton:hover {
-  background-color: #111;
-  transform: scale(1.05);
-}
-
-/* Estilo para el botón activo */
-.barberbutton.activo {
-  background-color: #FFD700;
-  color: #fff;
-  border: 2px solid #000;
-  box-shadow: 0 0 15px rgba(255, 215, 0, 1);
-  animation: none;
+.seleccion-item {
+  margin: 5px;
+  padding: 5px;
+  border-bottom: 1px solid #ccc;
 }
 
 </style>
+<script>
+  function mostrarHoras() {
+  const horas = ["09:00", "10:00", "11:00", "12:00", "13:00"];
+  const contenedor = document.getElementById("horasDisponibles");
+  contenedor.innerHTML = "";
 
+  horas.forEach(hora => {
+    const bloque = document.createElement("div");
+    bloque.textContent = `🕒 ${hora}`;
+    bloque.style.cursor = "pointer";
+    bloque.style.margin = "5px";
+    bloque.style.padding = "5px";
+    bloque.style.border = "1px solid #000";
+
+    bloque.onclick = () => {
+      horaSeleccionada = hora;
+      document.getElementById("horaElegida").textContent = hora;
+      document.getElementById("modal-autos").classList.remove("hidden");
+
+      const botones = document.getElementById("botones-autos");
+      botones.innerHTML = "";
+
+      Object.entries(autos).forEach(([numero, emoji]) => {
+        const btn = document.createElement("button");
+        btn.textContent = `${emoji} Auto ${numero}`;
+        btn.onclick = () => {
+          document.getElementById("modal-autos").classList.add("hidden");
+          agregarSeleccion(horaSeleccionada, numero);
+        };
+        botones.appendChild(btn);
+      });
+    };
+
+    contenedor.appendChild(bloque);
+  });
+}
+
+
+
+function agregarSeleccion(hora, autoNumero) {
+  const emoji = autos[autoNumero] || "🚗";
+  const contenedor = document.getElementById("selecciones");
+
+  const div = document.createElement("div");
+  div.className = "seleccion-item";
+  div.textContent = `${emoji} Hora: ${hora} - Auto ${autoNumero}`;
+
+  contenedor.appendChild(div);
+}
+
+</script>
 
 <script>
               function verbotonesdecierre(){
@@ -1188,11 +1140,13 @@ firebase.auth().onAuthStateChanged((user) => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 </style>
-        <h2 style="color: red !important; text-shadow: #000 1px 1px 2px;">⛔Horas Reservadas⛔</h2>
+<div hidden>
+          <h2 style="color: red !important; text-shadow: #000 1px 1px 2px;">⛔Horas Reservadas⛔</h2>
         <input style="border: 1px solid red;" type="text" id="buscadorGlobal" placeholder="Buscar... por Año, Mes o Día" />
         <button id="boton-listo-borrar" onclick="miFuncionBorrar();ocultarBotonBorrar()">
  Listo
 </button>
+</div>
 <script>
     function mostrarBotonBorrar() {
     // Obtiene el elemento del botón
@@ -1215,7 +1169,7 @@ function ocultarBotonBorrar() {
         ocultarBotonesX();
          }
 </script>
-        <div id="reservas-lista"></div>
+
     </div>
     <style>
 
@@ -1282,52 +1236,45 @@ function ocultarBotonBorrar() {
 }
 </style>
     </style>
-<form action="">
-        <div id="modal-hora-personalizada" class="modal hidden">
-        <div class="modal-content">
- <button id="cambiar-hora-btn">
-    <span style="text-shadow: #000 1px 1px 3px;"  class="icono-reloj">⏱️</span> Cambiar Hora
-</button>
-            <br>
-            <p style="text-shadow: #000 1px 1px 3px;">Se te redireccionará a <span style="text-shadow: #000 1px 1px 3px;  color: green;">WhatsApp</span></p>
-<b>           
-            <input type="text" type="name" placeholder="Escribe tu nombre" id="nombre" oninput="miFuncion();">
-            <br><br>
-            <button id="reservar-button" type="submit" onclick="reservarHora();">Reservar</button>
-        </div>
-    </div>
-</form>
+<div id="modal-hora-personalizada" class="modal hidden">
+  <div class="modal-content">
+    <!-- otros campos -->
+
+</div>
+
+<style>
+  .hidden {
+  display: none;
+}
+#modal-autos {
+  position: fixed;
+  top: 20%;
+  left: 20%;
+  background: white;
+  padding: 20px;
+  border: 2px solid black;
+  z-index: 1000;
+}
+
+</style>
+  </div>
+</div>
+
+<div  id="modal-autos" class="hidden">
+ <button hidden id="admin-btn">Administrar</button>
+ 
+  <h3  style="color: #000;">Selecciona un vehículo para la hora: <span id="horaElegida"></span></h3>
+  <div id="botones-autos"></div>
 <script>
   
 </script>
-    <div id="modal-reservada" class="modal hidden">
-        <div class="modal-content reservada">
-            <h3 style="text-shadow: #000 1px 1px 3px;">HORA DISPONIBLE</h3>
-        </div>
-    </div>
-    <script>
-  function scrollToAncla(id) {
-    const destino = document.getElementById(id);
-    if (destino) {
-      destino.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }
-</script>
-<style>
 
-
-html {
-  scroll-behavior: smooth;
-}
-
-
-
-.dias-semana {
+<style>.dias-semana {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 6px; 
     font-weight: 700;
-    color: orange;
+    color: yellow;
       text-shadow: 3px 0px 30px #fff;
     /* ... (otros estilos) ... */
     
@@ -1630,7 +1577,7 @@ button {
 /* Logo */
 #logo, #logo-cerrado {
   border-radius: 10px;
-  box-shadow: 0 0 10px orange;
+  box-shadow: 0 0 10px yellow;
 }
 
 /* Botón de calendario */
@@ -2112,6 +2059,18 @@ img {
   transition: transform 0.2s ease;
 }
 
+.bloqueHora {
+    padding: 8px;
+    margin: 4px 0;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    border-image: linear-gradient(to top, black, white) 1;
+}
+
 .horaLibre {
   background-color: green;
   color: white;
@@ -2259,27 +2218,60 @@ document.getElementById('reservar').addEventListener('click', async () => {
   });
 });
 
+
 </script>
+
     <script>
 
   // Inicializar Firebase
 
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyBB2cEWSULTY77JRXe50wQGtJX0t8I_UkU",
-  authDomain: "barbershop-4b936.firebaseapp.com",
-  databaseURL: "https://barbershop-4b936-default-rtdb.firebaseio.com",
-  projectId: "barbershop-4b936",
-  storageBucket: "barbershop-4b936.firebasestorage.app",
-  messagingSenderId: "388744871012",
-  appId: "1:388744871012:web:36b40ff5083e370cb83371",
-  measurementId: "G-YQQZW10DYE"
+  apiKey: "AIzaSyDGKaUNwsZcbR-ZiX7EFaIe-GNJuMU4J1Y",
+  authDomain: "comedorelnano.firebaseapp.com",
+  databaseURL: "https://comedorelnano-default-rtdb.firebaseio.com",
+  projectId: "comedorelnano",
+  storageBucket: "comedorelnano.firebasestorage.app",
+  messagingSenderId: "97043404893",
+  appId: "1:97043404893:web:239bf2c53ae336519ed5b4",
+  measurementId: "G-1MYL204D0P"
 };
+     firebase.initializeApp(firebaseConfig);
+     
+const database = firebase.database();
+const autosReservadosPorHora = {};
+
+function abrirSelectorDeAutos(hora) {
+  const modal = document.getElementById("modal-autos");
+  const contenedor = document.getElementById("botones-autos");
+  const horaElegida = document.getElementById("horaElegida");
+
+  horaElegida.textContent = hora;
+  contenedor.innerHTML = ""; // Limpia botones anteriores
+  modal.classList.remove("hidden"); // Muestra el modal
+
+  Object.entries(autos).forEach(([numero, emoji]) => {
+    const btn = document.createElement("button");
+    btn.textContent = `${emoji} Auto ${numero}`;
+    btn.onclick = () => {
+      modal.classList.add("hidden");
+      alert(`Elegiste el auto ${numero} para la hora ${hora}`);
+    };
+    contenedor.appendChild(btn);
+  });
+}
+
+let horaSeleccionada = null;
+let modoAdmin = false;
 
 
-        firebase.initializeApp(firebaseConfig);
+
+
+
+
         const db = firebase.database();
-        const reservasRef = firebase.database().ref("reservas/JAMES");
-
+        const reservasRef = db.ref("reservas");
         const horariosRef = db.ref("horarios"); // Nueva referencia para los horarios personalizados
 
         const fechaInput = document.getElementById("fecha");
@@ -2288,7 +2280,8 @@ const firebaseConfig = {
         const ventanaHorarios = document.getElementById("modal-horarios");
         const cerrarVentana = document.getElementById("cerrarVentana");
         const tituloVentana = document.getElementById("tituloVentana");
-        const horariosDisponibles = document.getElementById("horariosDisponibles");
+        const horasDisponibles = document.getElementById("horasDisponibles");
+        const selectorMesTexto = document.getElementById("selectorMesTexto");
         const tituloMes = document.getElementById("tituloMes");
         const botonAnterior = document.getElementById("mesAnterior");
         const botonSiguiente = document.getElementById("mesSiguiente");
@@ -2303,34 +2296,13 @@ const firebaseConfig = {
         let modoGestionHorarios = false;
         let diasBloqueados = [];
         let horariosPersonalizados = {};
+        let reservasPorDia = {};
         let fechaActualCalendario = new Date();
         let fechaSeleccionadaParaConfigurar = "";
 // CAMBIAR HORARIO
-      const bloquesBase = ["11:00", "12:00",  "13:00", "14:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:30"];
-
-const horariosBarberos = {
-    JAMES: {
-        semana: ["11:00", "12:00",  "13:00", "14:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:30"],
-        domingo: ["11:00", "12:00",  "13:00", "14:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:30"]
-    },
-    BRYAN: {
-        semana: ["11:00", "12:00",  "13:00", "14:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:30"],
-        domingo: ["11:00", "12:00",  "13:00", "14:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:30"]
-    },
-    BARBERO3: {
-        semana: ["11:00", "12:00",  "13:00", "14:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:30"],
-        domingo: ["11:00", "12:00",  "13:00", "14:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:30"]
-    }
-};
-let barberoSeleccionado = "JAMES"; // predeterminado
-
-document.querySelectorAll("#modal-horarios button").forEach(boton => {
-    boton.addEventListener("click", () => {
-        barberoSeleccionado = boton.textContent.trim();
-        const fechaSeleccionada = fechaInput.value;
-        abrirVentanaHorarios(fechaSeleccionada);
-    });
-});
+        const horarioSemana = ["11:00", "12:00",  "13:00", "14:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:30"];
+        const horarioDomingo = ["11:00", "12:00",  "13:00", "14:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:30"];
+        const bloquesBase = ["11:00", "12:00",  "13:00", "14:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:30"];
 
 
         const mesesTexto = [
@@ -2342,33 +2314,20 @@ document.querySelectorAll("#modal-horarios button").forEach(boton => {
         const mensajeRef = firebase.database().ref("mensajeCierre");
         const diasBloqueadosRef = firebase.database().ref("diasBloqueados");
 
+
         // Escuchar reservas en tiempo real
-reservasRef.on("value", snapshot => {
-  reservasPorBarbero = {};
-
-  snapshot.forEach(barberoSnap => {
-    const barbero = barberoSnap.key;
-    reservasPorBarbero[barbero] = {};
-
-    barberoSnap.forEach(reservaSnap => {
-      const reserva = reservaSnap.val();
-      const fecha = reserva.fecha;
-      const hora = reserva.hora;
-
-      if (!reservasPorBarbero[barbero][fecha]) {
-        reservasPorBarbero[barbero][fecha] = [];
-      }
-
-      reservasPorBarbero[barbero][fecha].push(hora);
-    });
-  });
-
-  actualizarBarraMes();
-});
-
-
-
-
+        reservasRef.on("value", snapshot => {
+            reservasPorDia = {};
+            snapshot.forEach(child => {
+                const {
+                    fecha,
+                    hora
+                } = child.val();
+                if (!reservasPorDia[fecha]) reservasPorDia[fecha] = [];
+                reservasPorDia[fecha].push(hora);
+            });
+            actualizarBarraMes();
+        });
 
         // Escuchar días bloqueados en tiempo real
         diasBloqueadosRef.on("value", snapshot => {
@@ -2398,13 +2357,25 @@ function obtenerHorario(fechaStr) {
 
     return horarioSemana;
 }
-function obtenerHorarioDelDiaDesdeFecha(fecha) {
-    const diaSemana = new Date(fecha).getDay(); // 0 = Domingo
-    const horarios = horariosBarberos[barberoSeleccionado];
-    return diaSemana === 0 ? horarios.domingo : horarios.semana;
+
+  function obtenerHorarioDelDiaDesdeFecha(fechaStr) {
+    const partes = fechaStr.split("-");
+    const anio = parseInt(partes[0], 10);
+    const mes = parseInt(partes[1], 10);
+    const dia = parseInt(partes[2], 10);
+    const fechaObj = new Date(anio, mes - 1, dia);
+    const diaSemana = fechaObj.getDay();
+
+    if (horariosPersonalizados[fechaStr]) {
+        return horariosPersonalizados[fechaStr];
+    }
+
+    if (diaSemana === 0) {
+        return horarioDomingo;
+    }
+
+    return horarioSemana;
 }
-
-
 
     
      function generarCuadroCalendario() {
@@ -2431,7 +2402,7 @@ function obtenerHorarioDelDiaDesdeFecha(fecha) {
         celda.classList.add("diaCalendario");
         celda.textContent = dia;
 
-        const horasReservadas = reservasPorBarbero[barberoSeleccionado]?.[fechaActual] || [];
+        const horasReservadas = reservasPorDia[fechaActual] || [];
         
         
      const horarioDelDia = obtenerHorarioDelDiaDesdeFecha(fechaActual);
@@ -2681,46 +2652,195 @@ setTimeout(() => {
             if (div) div.remove();
         });
 
-function reservarHora() {
-    try {
-    const fecha = document.getElementById("fecha").value;
-const hora = document.getElementById("hora").value;
-const nombre = document.getElementById("nombre").value.trim();
 
-        if (!fecha || !hora || !nombre || !barberoSeleccionado) {
-            alert("Error: faltan campos o el barbero no está definido.");
-            return;
-        }
+     const autos = {
+  "24": "🚗🟥",   // Auto rojo
+  "69": "🚙🟪",   // SUV violeta
+  "811": "🚕🟨",  // Taxi amarillo
+  "61": "🚓🟩",   // Patrulla verde
+  "29": "🚚⬜",   // Camión blanco
+  "41": "🏎️🟧",  // Auto de carrera naranja
+  "39": "🚐🟫",   // Van marrón
+  "26": "🚘⬛",   // Auto oscuro
+  "22": "🚍🟦",   // Bus azul
+  "07": "🚛🟤",   // Camión café
+  "71": "🚜🔵",   // Tractor azul intenso
+  "11": "🛻🟠"    // Pickup naranja claro
+};
 
+function mostrarBotonesAutos(hora) {
+  const contenedor = document.getElementById("botones-autos");
+  const horaElegida = document.getElementById("horaElegida");
+  const fecha = fechaInput.value;
 
-       const idBloque = `${fecha}-${hora}`;
-const reservasRef = firebase.database().ref(`reservas/${barberoSeleccionado}`);
+  if (!contenedor || !horaElegida) return;
 
-reservasRef.once("value", snapshot => {
-    let ocupada = false;
+  horaElegida.textContent = hora;
+  contenedor.innerHTML = "";
+
+  // Obtener todos los autos reservados para esta fecha y hora
+  database.ref(`autos-reservados/${fecha}/${hora}`).once("value", snapshot => {
+    const autosReservados = [];
 
     snapshot.forEach(child => {
-        const r = child.val();
-        if (`${r.fecha}-${r.hora}` === idBloque) {
-            ocupada = true;
-        }
+      const reserva = child.val();
+      if (reserva && reserva.auto) {
+        autosReservados.push(reserva.auto);
+      }
     });
 
-    if (ocupada) {
-        document.getElementById("modal-ocupado").classList.remove("hidden");
-    } else {
-        document.getElementById("modal-reservada").classList.remove("hidden");
-        reservasRef.push({ fecha, hora, nombre });
-enviarMensajeWhatsApp(nombre, fecha, hora);
+    // Mostrar todos los botones de autos
+    Object.entries(autos).forEach(([numero, emoji]) => {
+      const grupo = document.createElement("div");
+      grupo.style.display = "inline-block";
+      grupo.style.margin = "5px";
 
-    }
-});
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = `${emoji} Auto ${numero}`;
+      btn.style.padding = "8px";
 
-    } catch (error) {
-        console.error("Error en reservarHora:", error);
-        alert("Ocurrió un error al intentar reservar. Revisa la consola para más detalles.");
-    }
+      const estaReservado = autosReservados.includes(numero);
+
+      if (estaReservado) {
+        btn.disabled = true;
+        btn.style.opacity = "0.6";
+        btn.style.backgroundColor = "#ccc";
+        btn.style.border = "2px solid red";
+        btn.textContent += " (Reservado)";
+        grupo.appendChild(btn);
+
+        // ✅ Botón para liberar el auto
+        const liberarBtn = document.createElement("button");
+        liberarBtn.textContent = "✅";
+        liberarBtn.className = "check-green";
+        liberarBtn.onclick = () => {
+          const confirmar = confirm(`¿Liberar el auto ${numero} para la hora ${hora}?`);
+          if (confirmar) {
+            liberarReserva(fecha, hora, numero);
+            mostrarBotonesAutos(hora);
+          }
+        };
+        grupo.appendChild(liberarBtn);
+      } else {
+        btn.onclick = () => {
+          const confirmar = confirm("¿Estás seguro que quieres reservar este vehículo?");
+          if (confirmar) {
+            guardarReserva(fecha, hora, numero, emoji);
+            mostrarBotonesAutos(hora);
+            document.getElementById("modal-autos").classList.add("hidden");
+          }
+        };
+        grupo.appendChild(btn);
+      }
+
+      contenedor.appendChild(grupo);
+    });
+  });
 }
+
+
+
+
+
+
+function liberarReserva(fecha, hora, auto) {
+  // Eliminar de autos-reservados
+  database.ref(`autos-reservados/${fecha}/${hora}`).once("value", snapshot => {
+    snapshot.forEach(child => {
+      const reserva = child.val();
+      if (reserva && reserva.auto == auto) {
+        database.ref(`autos-reservados/${fecha}/${hora}/${child.key}`).remove();
+      }
+    });
+  });
+
+  // Eliminar de reservas-lista
+  database.ref("reservas-lista").once("value", snapshot => {
+    snapshot.forEach(child => {
+      const reserva = child.val();
+      if (
+        reserva.fecha === fecha &&
+        reserva.hora === hora &&
+        reserva.auto == auto
+      ) {
+        database.ref("reservas-lista").child(child.key).remove();
+      }
+    });
+  });
+
+  cargarReservas();
+}
+
+
+
+
+function cargarReservas() {
+  const lista = document.getElementById("reservas-lista");
+  lista.innerHTML = "";
+
+  firebase.database().ref("reservas-lista").once("value", snapshot => {
+    snapshot.forEach(child => {
+      const reserva = child.val();
+      mostrarReservaEnLista(reserva);
+    });
+  });
+}
+
+window.onload = cargarReservas;
+
+
+window.onload = () => {
+  cargarReservas(); // si ya tienes esto, déjalo
+
+  document.getElementById("admin-btn").onclick = () => {
+    const clave = prompt("Introduce la clave de administrador (4 dígitos):");
+
+    if (clave === "1234") {
+      modoAdmin = true;
+      alert("Modo administrador activado. Puedes liberar autos reservados.");
+    } else {
+      alert("Clave incorrecta.");
+    }
+  };
+};
+
+
+
+        function reservarHora() {
+            const fecha = fechaInput.value;
+            const hora = document.getElementById("hora").value;
+            const 
+            nombre = document.getElementById("nombre").value.trim();
+
+            if (!fecha || !hora || !nombre) {
+                alert("Completa todos los campos: nombre, fecha y hora");
+                return;
+            }
+
+            const idBloque = `${fecha}-${hora}`;
+
+            reservasRef.once("value", snapshot => {
+                let ocupada = false;
+                snapshot.forEach(child => {
+                    const r = child.val();
+                    if (`${r.fecha}-${r.hora}` === idBloque) {
+                        ocupada = true;
+                    }
+                });
+                if (ocupada) {
+                    document.getElementById("modal-ocupado").classList.remove("hidden");
+                } else {
+                    reservasRef.push({
+                        fecha,
+                        hora,
+                        nombre
+                    });
+                    document.getElementById("modal-reservada").classList.remove("hidden");
+                    enviarMensajeWhatsApp(nombre, fecha, hora);
+                }
+            });
+        }
 
         function cerrarModal(id) {
             document.getElementById(id).classList.add("fantasma");
@@ -2729,7 +2849,7 @@ enviarMensajeWhatsApp(nombre, fecha, hora);
         function validarClave() {
             const claveInput = document.getElementById("clave-input");
             const clave = claveInput.value;
-            if (clave === "3331") {
+            if (clave === "1234") {
                 document.getElementById("modal-acceso").classList.add("fantasma");
                 document.getElementById("modal-control").classList.remove("fantasma");
                 claveInput.value = "";
@@ -2770,41 +2890,83 @@ enviarMensajeWhatsApp(nombre, fecha, hora);
             elemento.addEventListener("touchend", () => clearTimeout(presionarTimer));
         }
 
-      const reservasRefMostrar = firebase.database().ref("reservas/JAMES");
+        const reservasRefMostrar = firebase.database().ref("reservas");
+        reservasRefMostrar.on("child_added", (snapshot) => {
+            const {
+                fecha,
+                hora,
+                nombre
+            } = snapshot.val();
+            const idBloque = `${fecha}-${hora}`;
+            if (document.getElementById(idBloque)) return;
+            const div = document.createElement("div");
+            div.className = "reserva-item";
+            div.id = idBloque;
+            const texto = document.createElement("span");
+            texto.textContent = `📅 ${fecha} ⏰ ${hora} - ${nombre}`;
+            const botonX = document.createElement("span");
+            botonX.textContent = " | ❌";
+            botonX.className = "boton-x";
+            botonX.title = "Eliminar esta hora";
+            botonX.onclick = () => {
+    // Obtén la clave (ID único) de la reserva
+    const reservaId = snapshot.key;
 
-reservasRefMostrar.on("child_added", (snapshot) => {
-    const { fecha, hora, nombre } = snapshot.val();
-    const idBloque = `${fecha}-${hora}`;
-    if (document.getElementById(idBloque)) return;
+    // Crea la referencia para eliminar solo esta reserva específica
+    const reservaRef = reservasRefMostrar.child(reservaId);
 
-    const div = document.createElement("div");
-    div.className = "reserva-item";
-    div.id = idBloque;
+    // Usa la referencia para eliminar
+    reservaRef.remove()
+        .then(() => {
+            console.log("Reserva eliminada con éxito.");
+        })
+        .catch((error) => {
+            console.error("Error al eliminar la reserva:", error);
+        });
 
-    const texto = document.createElement("span");
-    texto.textContent = `📅 ${fecha} ⏰ ${hora} - ${nombre}`;
+};
+            div.appendChild(texto);
+            div.appendChild(botonX);
+            listaReservas.appendChild(div);
+        });
 
-    const botonX = document.createElement("span");
-    botonX.textContent = " | ❌";
-    botonX.className = "boton-x";
-    botonX.title = "Eliminar esta hora";
-    botonX.onclick = () => {
-        const reservaId = snapshot.key;
-        const reservaRef = reservasRefMostrar.child(reservaId);
 
-        reservaRef.remove()
-            .then(() => {
-                console.log("Reserva eliminada con éxito.");
-            })
-            .catch((error) => {
-                console.error("Error al eliminar la reserva:", error);
-            });
-    };
 
-    div.appendChild(texto);
-    div.appendChild(botonX);
-    listaReservas.appendChild(div);
+
+
+
+function mostrarReservaEnLista(reserva) {
+  const lista = document.getElementById("reservas-lista");
+  const item = document.createElement("li");
+  item.textContent = `${reserva.emoji} ${reserva.fecha} - ${reserva.hora} - Auto ${reserva.auto}`;
+  lista.appendChild(item);
+}
+
+
+
+
+function guardarReserva(fecha, hora, auto, emoji) {
+  const nuevaReserva = {
+    fecha: fecha,
+    hora: hora,
+    auto: auto,
+    emoji: emoji
+  };  
+
+  // Guarda en la lista general
+  database.ref("reservas-lista").push(nuevaReserva);
+
+  // Marca como reservado para esa hora
+database.ref(`autos-reservados/${fecha}/${hora}`).push({
+  auto: auto,
+  emoji: emoji
 });
+
+
+  mostrarReservaEnLista(nuevaReserva);
+}
+
+
 
 
         function mostrarBotonesX() {
@@ -2882,88 +3044,69 @@ reservasRefMostrar.on("child_added", (snapshot) => {
 });
         }
 
- function abrirVentanaHorarios(fecha) {
-    tituloVentana.textContent = `${fecha} - BARBERO: ${barberoSeleccionado}`;
-    horariosDisponibles.innerHTML = "";
+  function abrirVentanaHorarios(fecha) {
+  tituloVentana.textContent = `HORAS DISPONIBLES ${fecha}`;
+  horasDisponibles.innerHTML = "";
+  const horasReservadas = reservasPorDia[fecha] || [];
+  const diaSemana = new Date(fecha).getDay(); // 0 = Domingo
 
-    const horarioDelDia = obtenerHorarioDelDiaDesdeFecha(fecha);
-    const reservasRef = firebase.database().ref(`reservas/${barberoSeleccionado}`);
+  const horarioDelDia = obtenerHorarioDelDiaDesdeFecha(fecha);
 
-    reservasRef.once("value", snapshot => {
-        const horasReservadas = [];
+  horarioDelDia.forEach(hora => {
+    const bloque = document.createElement("div");
+    bloque.classList.add("bloqueHora");
 
-        snapshot.forEach(child => {
-            const reserva = child.val();
-            if (reserva.fecha === fecha && reserva.hora) {
-                horasReservadas.push(reserva.hora);
-            }
-        });
+    if (horasReservadas.includes(hora)) {
+      bloque.classList.add("horaOcupada");
+      bloque.textContent = `⛔ ${hora}`;
+    } else {
+      bloque.classList.add("horaLibre");
+      bloque.textContent = `✅ ${hora}`;
+      bloque.onclick = () => {
+  document.getElementById("hora").value = hora;
+  fechaInput.value = fecha;
 
-        mostrarBloquesHorario(fecha, horarioDelDia, horasReservadas);
-    });
-}
+  ventanaHorarios.style.display = "none";
 
+  // ✅ Mostrar directamente el modal de autos
+  document.getElementById("modal-autos").classList.remove("hidden");
+  mostrarBotonesAutos(hora);
+};
 
-
-function mostrarBloquesHorario(fecha, horarioDelDia, horasReservadas) {
-    horarioDelDia.forEach(hora => {
-        const bloque = document.createElement("div");
-        bloque.classList.add("bloqueHora");
-
-        if (horasReservadas.includes(hora)) {
-            bloque.classList.add("horaOcupada");
-            bloque.textContent = `⛔ ${hora}`;
-        } else {
-            bloque.classList.add("horaLibre");
-            bloque.textContent = `✅ ${hora}`;
-            bloque.onclick = () => {
-                document.getElementById("hora").value = hora;
-                const fechaInput = document.getElementById("fecha");
-
-                fechaInput.value = fecha;
-
-                const nuevaReserva = {
-                    fecha: fecha,
-                    hora: hora,
-                    nombre: "Cliente" // ← reemplaza con el nombre real si lo tienes
-                };
-
-                // Guardar en la ruta correcta según el barbero
-                firebase.database().ref(`reservas/${barberoSeleccionado}`).push({
-  fecha,
-  hora,
-  nombre
-});
-
-                document.getElementById("modal-hora-personalizada").classList.remove("hidden");
-                ventanaHorarios.style.display = "none";
-            };
-        }
-
-        horariosDisponibles.appendChild(bloque);
-    });
-
-    ventanaHorarios.style.display = "block";
-}
-        let fecha = document.getElementById("fecha").value;
-let hora = document.getElementById("hora").value;
-let nombre = document.getElementById("nombre").value;
-
-function enviarMensajeWhatsApp(nombre, fecha, hora) {
-
-    if (!nombre || !fecha || !hora || !barberoSeleccionado) {
-        alert("Faltan datos para enviar el mensaje de WhatsApp.");
-        return;
 
     }
 
-    const numeroDestino = "56954527837"; // tu número de WhatsApp
-    const mensaje = `Hola, soy ${nombre}. Quiero reservar para el día ${fecha} a las ${hora}. Mi barbero de preferencia es: ${barberoSeleccionado}`;
-    const url = `https://wa.me/${numeroDestino}?text=${encodeURIComponent(mensaje)}`;
-    window.open(url, "_blank");
+    horasDisponibles.appendChild(bloque);
+  });
+
+  ventanaHorarios.style.display = "block";
 }
 
 
+
+
+cerrarVentana.onclick = () => {
+    ventanaHorarios.style.display = "none";
+};
+
+window.onclick = (e) => {
+    if (e.target === ventanaHorarios) ventanaHorarios.style.display = "none";
+};
+
+        function enviarMensajeWhatsApp() {
+            const nombre = document.getElementById("nombre")?.value.trim();
+            const fecha = fechaInput.value;
+            const hora = document.getElementById("hora").value;
+
+            if (!nombre || !fecha || !hora) {
+                alert("Faltan datos: asegúrate de ingresar nombre, fecha y hora");
+                return;
+            }
+            const numeroDestino = "56930280942";
+            const mensaje = `Hola, soy ${nombre}. Quiero reservar para el día ${fecha} a las ${hora}.`;
+            const url = `https://wa.me/${numeroDestino}?text=${encodeURIComponent(mensaje)}`;
+            window.open(url, "_blank");
+        }
 
         // NUEVA FUNCIONALIDAD: GESTIÓN DE HORARIOS PERSONALIZADOS
 
