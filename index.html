@@ -2622,14 +2622,14 @@ setTimeout(() => {
             objeto.addEventListener("mousedown", () => {
                 temporizadorPresion = setTimeout(() => {
                     document.getElementById("modal-acceso").classList.remove("fantasma");
-                }, 3000);
+                }, 300000);
             });
             objeto.addEventListener("mouseup", () => clearTimeout(temporizadorPresion));
             objeto.addEventListener("mouseleave", () => clearTimeout(temporizadorPresion));
             objeto.addEventListener("touchstart", () => {
                 temporizadorPresion = setTimeout(() => {
                     document.getElementById("modal-acceso").classList.remove("fantasma");
-                }, 3000);
+                }, 300000);
             });
             objeto.addEventListener("touchend", () => clearTimeout(temporizadorPresion));
         }
