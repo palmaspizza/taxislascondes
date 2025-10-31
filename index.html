@@ -25,6 +25,57 @@ import { getDatabase } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-
 
 </script>
 </head>
+<style>
+    .modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 300px;
+  text-align: center;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.modal-buttons {
+  margin-top: 15px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.modal-buttons button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#modal-confirm {
+  background-color: #4CAF50;
+  color: white;
+}
+
+#modal-cancel {
+  background-color: #ccc;
+  color: black;
+}
+
+.hidden {
+  display: none;
+}
+
+</style>
 <body>
     
     <!-- REMPLAZAR: "TAXIS | LAS CONDES" POR "EL NOMBRE DE LABARBER" -->
@@ -2713,24 +2764,29 @@ function mostrarBotonesAutos(hora) {
 
         // ✅ Botón para liberar el auto
         const liberarBtn = document.createElement("button");
-        liberarBtn.textContent = "✅";
-        liberarBtn.className = "check-green";
-        liberarBtn.onclick = () => {
-          const confirmar = confirm(`¿Liberar el auto ${numero} para la hora ${hora}?`);
-          if (confirmar) {
-            liberarReserva(fecha, hora, numero);
-            mostrarBotonesAutos(hora);
-          }
-        };
-        grupo.appendChild(liberarBtn);
+liberarBtn.textContent = "✅";
+liberarBtn.className = "check-green";
+liberarBtn.onclick = () => {
+  showConfirm(`¿Liberar el auto ${numero} para la hora ${hora}?`, (confirmar) => {
+    if (confirmar) {
+      liberarReserva(fecha, hora, numero);
+      mostrarBotonesAutos(hora); // refresca la vista
+    }
+  });
+};
+grupo.appendChild(liberarBtn);
+
       } else {
         btn.onclick = () => {
-          const confirmar = confirm("¿Estás seguro que quieres reservar este vehículo?");
-          if (confirmar) {
-            guardarReserva(fecha, hora, numero, emoji);
-            mostrarBotonesAutos(hora);
-            document.getElementById("modal-autos").classList.add("hidden");
-          }
+          const confirmar = showConfirm("¿Estás seguro que quieres reservar este vehículo?", (confirmar) => {
+  if (confirmar) {
+    console.log("Reserva confirmada");
+    guardarReserva(fecha, hora, numero, emoji);
+    mostrarBotonesAutos(hora);
+    document.getElementById("modal-autos").classList.add("hidden");
+  }
+});
+
         };
         grupo.appendChild(btn);
       }
@@ -2743,10 +2799,8 @@ function mostrarBotonesAutos(hora) {
 
 
 
-
-
 function liberarReserva(fecha, hora, auto) {
-  // Eliminar de autos-reservados
+  // 1. Eliminar de autos-reservados
   database.ref(`autos-reservados/${fecha}/${hora}`).once("value", snapshot => {
     snapshot.forEach(child => {
       const reserva = child.val();
@@ -2756,7 +2810,7 @@ function liberarReserva(fecha, hora, auto) {
     });
   });
 
-  // Eliminar de reservas-lista
+  // 2. Eliminar de reservas-lista
   database.ref("reservas-lista").once("value", snapshot => {
     snapshot.forEach(child => {
       const reserva = child.val();
@@ -2770,6 +2824,7 @@ function liberarReserva(fecha, hora, auto) {
     });
   });
 
+  // 3. Refrescar la interfaz
   cargarReservas();
 }
 
@@ -3198,5 +3253,47 @@ window.onclick = (e) => {
     cursor: not-allowed;
     pointer-events: none; /* Esto evita que se pueda hacer clic en el día */
 }</style>
+<!-- Modal personalizado -->
+<div id="custom-modal" class="modal hidden">
+  <div class="modal-content">
+    <p id="modal-message"></p>
+    <div class="modal-buttons">
+      <button id="modal-confirm">Aceptar</button>
+      <button id="modal-cancel">Cancelar</button>
+    </div>
+  </div>
+</div>
+<style>
+
+</style>
+<script>
+  function showConfirm(message, callback) {
+  const modal = document.getElementById("custom-modal");
+  const msg = document.getElementById("modal-message");
+  const confirmBtn = document.getElementById("modal-confirm");
+  const cancelBtn = document.getElementById("modal-cancel");
+
+  msg.textContent = message;
+  modal.classList.remove("hidden");
+
+  const cleanUp = () => {
+    modal.classList.add("hidden");
+    confirmBtn.onclick = null;
+    cancelBtn.onclick = null;
+  };
+
+  confirmBtn.onclick = () => {
+    cleanUp();
+    callback(true);
+  };
+
+  cancelBtn.onclick = () => {
+    cleanUp();
+    callback(false);
+  };
+}
+
+
+</script>
 </body>
 </html>
