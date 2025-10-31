@@ -75,7 +75,7 @@ import { getDatabase } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-
   }
 </script>
 
-      
+   
 
         Selecciona un día
       <div class="dias-semana"></div>
@@ -1261,8 +1261,9 @@ function ocultarBotonBorrar() {
 </div>
 
 <div  id="modal-autos" class="hidden">
- <button hidden id="admin-btn">Administrar</button>
- 
+
+ <button type="button" onclick="document.getElementById('modal-autos').classList.add('hidden');" >CERRAR</button>   
+ <button type="button" onclick="window.open('https://taxislascondes.netlify.app')">ADMINISTRAR</button>   
   <h3  style="color: #000;">Selecciona un vehículo para la hora: <span id="horaElegida"></span></h3>
   <div id="botones-autos"></div>
 <script>
