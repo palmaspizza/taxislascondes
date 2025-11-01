@@ -126,9 +126,9 @@ import { getDatabase } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-
   }
 </script>
 
-   
-
-        Selecciona un día
+   <button onclick="actiwar();cerrarModal('modal-control');"  style="font-size: 74%; border: 0px solid red;" id="activarBloqueoDias">🔒 Marcar Días cerrados</button>
+       <button onclick="desactiwar();ocultarbotonesdecierre()" style="font-size: 74%; border: 2px solid red;" hidden id="desactivarBloqueoDias"> ❌Desactivar bloqueo</button>
+   <br><br><br>    Selecciona un día
       <div class="dias-semana"></div>
 <div id="cuadroCalendario"></div>
 <br><br><br>
@@ -420,7 +420,7 @@ function mostrar(){
             color: #333;
         }
     </style>
-    <button onclick="desactiwar();ocultarbotonesdecierre()" hidden id="desactivarBloqueoDias">✅ Desactivar bloqueo</button>
+
        
         <h1 style="text-shadow: #000 3px 3px 5px;" hidden>Hora</h1>
         <div h style="margin-bottom: 10px;"></div>
@@ -467,14 +467,8 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="caja-misteriosa">
                 <h3>Control TAXIS</h3>
    
-                <button style="background-color: blue;" onclick="activarModoHorarios();">⚙️ Gestionar Horarios por Día</button>
-                <br><br>
-                <button style="background-color: purple;" onclick="cerrarModal('modal-control');borrarTodasLasHorasEnPantalla()">🧹 borrar TODAS las reservas</button>
-                <br><br>
-                <button onclick="actiwar();cerrarModal('modal-control');"  style="border: 2px solid white; color: #000; background: yellow; text-shadow: #000 3px 3px 5px;" id="activarBloqueoDias">🔒 Marcar Días cerrados 1x1</button>
-                <button type="button" onclick="mostrarX();" style="border: 2px solid white; color: #000; background: lightslategrey; text-shadow: #000 3px 3px 5px;"  id="abrirVentanaVX"><span style="color: red;">CERRAR</span><span style="color: #fff;"> /</span>
-                <span style="color: green; text-shadow: #000 2px 2px 5px;">ABRIR</span> todos los...
-</button>
+         
+              
 <style>
      /* --- Estilos únicos para el menú desplegable --- */
 
@@ -880,8 +874,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
                 <br><br>
                 <button style="background-color: rgb(65, 65, 65);" onclick="borrarHorasMesHastaHoy()">📜 Borrar reservas antiguas del MES</button>
-                <br><br>
-                <button style="background: brown; color: white;" onclick="mostrarBotonBorrar();mostrarBotonesX();cerrarModal('modal-control');">❌ Eliminar reservas a elección </button>
+
                 <br><br>
                 <button style="font-size: 150%; background-color: red;" onclick="cerrarModal('modal-control')">Cerrar Panel de Control</button>
             </div>
@@ -964,10 +957,9 @@ document.addEventListener('DOMContentLoaded', function() {
     color: yellowred;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* Sombra más definida */
     font-size: 27px !important; /* Un poco más grande para que la animación sea visible */
-    
-    /* Propiedades de la animación */
+    position: center !important; /* Propiedades de la animación */
     animation: brilloSuave 2s infinite alternate ease-in-out; /* Nombre, duración, repetición, dirección, timing */
-    display: inline-block; /* Importante para que transform funcione correctamente */
+    display: center; /* Importante para que transform funcione correctamente */
     padding: 5px; /* Pequeño padding para no cortar la sombra/animación */
 }
 
@@ -991,8 +983,12 @@ document.addEventListener('DOMContentLoaded', function() {
             <div style="background-color: #303030 !important; margin-top: 10px;"  class="contenidoModal">
                 <span id="cerrarVentana" class="cerrarModal">Cerrar</span>
                 <br>
-                <h3 id="tituloVentana" class="titulo-animado" style="color: yellowred; text-shadow: 1px 1px 1px #000;"></h3>
+          <center>
+                  <h3 id="tituloVentana" class="titulo-animado" style="color: yellowred; text-shadow: 1px 1px 1px #000;"></h3>
+          </center>
                 <h3 style="color: #fff      ;">Selecciona la hora</h3>
+                      
+                
                <div id="horasDisponibles"></div>
 <style>
   .hidden {
@@ -1000,12 +996,16 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 #modal-autos {
   position: fixed;
-  top: 20%;
-  left: 20%;
-  background: white;
+  top: 0%;
+  left: 10%;
+  width: 100%;
+  height: 100%;
+  background: rgb(29, 29, 29);
   padding: 20px;
   border: 2px solid black;
   z-index: 1000;
+  max-width: 300px;
+  overflow-y: auto; 
 }
 #botones-autos button {
   margin: 5px;
@@ -1042,8 +1042,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
       Object.entries(autos).forEach(([numero, emoji]) => {
         const btn = document.createElement("button");
+        
         btn.textContent = `${emoji} Auto ${numero}`;
         btn.onclick = () => {
+          document.createElement("button").style.background = "gold";
           document.getElementById("modal-autos").classList.add("hidden");
           agregarSeleccion(horaSeleccionada, numero);
         };
@@ -1297,26 +1299,80 @@ function ocultarBotonBorrar() {
   .hidden {
   display: none;
 }
-#modal-autos {
-  position: fixed;
-  top: 20%;
-  left: 20%;
-  background: white;
-  padding: 20px;
-  border: 2px solid black;
-  z-index: 1000;
-}
+
 
 </style>
   </div>
 </div>
+<style>
+  /* Contenedor general (opcional para agrupar) */
+#reserva-formulario {
+  background-color: #000;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  max-width: 400px;
+  margin: 20px auto;
+  color: white;
+}
 
+/* Título */
+#reserva-formulario h3 {
+  font-size: 22px;
+  font-weight: bold;
+  color: white;
+  background: yellow;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+/* Etiqueta */
+#reserva-formulario label {
+  display: block;
+  font-size: 16px;
+  font-weight: 500;
+  color: white;
+  margin-bottom: 6px;
+}
+
+#reserva-formulario label span {
+  color: yellow;
+  font-weight: bold;
+}
+
+/* Input */
+#reserva-formulario input[type="number"] {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid black;
+  border-radius: 8px;
+  background-color: #fdfdfd;
+  color: black;
+  font-size: 16px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+  transition: border-color 0.3s ease;
+}
+
+#reserva-formulario input[type="number"]:focus {
+  border-color: yellow;
+  outline: none;
+}
+
+</style>
 <div  id="modal-autos" class="hidden">
 
  <button type="button" onclick="document.getElementById('modal-autos').classList.add('hidden');" >CERRAR</button>   
   
-  <h3  style="color: #000;">Selecciona un vehículo para la hora: <span id="horaElegida"></span></h3>
+  <div id="reserva-formulario">
+  <h3>Selecciona un vehículo para la hora: <span id="horaElegida"></span></h3>
+  <label for="minutos">Escribe el minuto de la Reserva <span>(REQUERIDO)</span></label>
+  <input type="number" id="minutos">
+</div>
+
   <div id="botones-autos"></div>
+  <br><br><br><br><br>
 <script>
   
 </script>
@@ -1534,7 +1590,7 @@ select {
 
 /* Botones */
 button {
-  background-color: #ff4d4d;
+
   color: white;
   border: none;
   padding: 10px 15px;
@@ -1544,6 +1600,7 @@ button {
   font-weight: bold;
   transition: background-color 0.3s ease;
   text-shadow: #000 1px 1px 2px;
+       background: linear-gradient(to bottom, yellow, #000, black);
 }
 
 
@@ -1552,7 +1609,7 @@ button {
   background-color: #2b2b2b;
   padding: 10px;
   margin: 5px 0;
-  border-left: 8px solid red;
+  border-left: 10px solid goldenrod;
   border-radius: 5px;
 }
 
@@ -2025,7 +2082,6 @@ img {
 }
 
 .dia-verde {
-  background-color: green;
   color: white;
 }
 
@@ -2056,8 +2112,10 @@ img {
 }
 
 .diaLibre {
-  background-color: green;
+  background-color: #000;
   color: white;
+  box-shadow: yellow 0px 0px 3px;
+  border: 1px solid yellow;
 }
 
 .diaOcupado {
@@ -2114,13 +2172,13 @@ img {
 .bloqueHora {
     padding: 8px;
     margin: 4px 0;
-    border: 2px solid transparent;
+    border: 2px solid goldenrod;
     border-radius: 4px;
     font-weight: bold;
     text-align: center;
     cursor: pointer;
     transition: transform 0.2s ease;
-    border-image: linear-gradient(to top, black, white) 1;
+     background: linear-gradient(to bottom, darkgray, #000, black);
 }
 
 .horaLibre {
@@ -2352,9 +2410,9 @@ let modoAdmin = false;
         let fechaActualCalendario = new Date();
         let fechaSeleccionadaParaConfigurar = "";
 // CAMBIAR HORARIO
-        const horarioSemana = ["11:00", "12:00",  "13:00", "14:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:30"];
-        const horarioDomingo = ["11:00", "12:00",  "13:00", "14:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:30"];
-        const bloquesBase = ["11:00", "12:00",  "13:00", "14:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:30"];
+        const horarioSemana = ["🕑 |00: ","🕑 |01: ","🕑 |02: ","🕑 |03:","🕑 | 04:","🕑 | 05:","🕑 | 06:","🕑 | 07:","🕑 | 08:","🕑 | 09:","🕑 | 10:","🕑 | 11:", "🕑 | 12:",  "🕑 | 13:", "🕑 | 14:", "🕑 | 16:", "🕑 | 17:", "🕑 | 18:", "🕑 | 19:", "🕑 | 20:", "🕑 | 21:", "🕑 | 22:","🕑 | 23:"];
+        const horarioDomingo = ["00","01","02","03","04","05","06","07","08","09","10","11", "12",  "13", "14", "16", "17", "18", "19", "20", "21", "22","23"];
+        const bloquesBase = ["00","01","02","03","04","05","06","07","08","09","10","11", "12",  "13", "14", "16", "17", "18", "19", "20", "21", "22","23"];
 
 
         const mesesTexto = [
@@ -2674,14 +2732,14 @@ setTimeout(() => {
             objeto.addEventListener("mousedown", () => {
                 temporizadorPresion = setTimeout(() => {
                     document.getElementById("modal-acceso").classList.remove("fantasma");
-                }, 300000);
+                }, 3000);
             });
             objeto.addEventListener("mouseup", () => clearTimeout(temporizadorPresion));
             objeto.addEventListener("mouseleave", () => clearTimeout(temporizadorPresion));
             objeto.addEventListener("touchstart", () => {
                 temporizadorPresion = setTimeout(() => {
                     document.getElementById("modal-acceso").classList.remove("fantasma");
-                }, 300000);
+                }, 3000);
             });
             objeto.addEventListener("touchend", () => clearTimeout(temporizadorPresion));
         }
@@ -2719,6 +2777,30 @@ setTimeout(() => {
   "71": "🚜🔵",   // Tractor azul intenso
   "11": "🛻🟠"    // Pickup naranja claro
 };
+
+
+
+
+function obtenerColorDesdeEmoji(emojiColor) {
+  const mapaColores = {
+    "🟥": "#e74c3c", // rojo
+    "🟪": "#9b59b6", // violeta
+    "🟨": "#f1c40f", // amarillo
+    "🟩": "#2ecc71", // verde
+    "⬜": "#ecf0f1", // blanco
+    "🟧": "#e67e22", // naranja
+    "🟫": "#8d6e63", // marrón
+    "⬛": "#2c3e50", // negro
+    "🟦": "#3498db", // azul
+    "🟤": "#a0522d", // café
+    "🔵": "#2980b9", // azul intenso
+    "🟠": "#ff9800"  // naranja claro
+  };
+  return mapaColores[emojiColor] || "#777"; // color por defecto
+}
+
+
+  
 
 function mostrarBotonesAutos(hora) {
   const contenedor = document.getElementById("botones-autos");
@@ -2762,9 +2844,9 @@ function mostrarBotonesAutos(hora) {
         btn.textContent += " (Reservado)";
         grupo.appendChild(btn);
 
-        // ✅ Botón para liberar el auto
+        //  Botón para liberar el auto
         const liberarBtn = document.createElement("button");
-liberarBtn.textContent = "✅";
+liberarBtn.textContent = "";
 liberarBtn.className = "check-green";
 liberarBtn.onclick = () => {
   showConfirm(`¿Liberar el auto ${numero} para la hora ${hora}?`, (confirmar) => {
@@ -2817,7 +2899,8 @@ function liberarReserva(fecha, hora, auto) {
       if (
         reserva.fecha === fecha &&
         reserva.hora === hora &&
-        reserva.auto == auto
+        reserva.auto == auto &&
+        reserva.minutos == minutos
       ) {
         database.ref("reservas-lista").child(child.key).remove();
       }
@@ -2866,6 +2949,7 @@ window.onload = () => {
         function reservarHora() {
             const fecha = fechaInput.value;
             const hora = document.getElementById("hora").value;
+            const minuto = document.getElementById("minuto").value;
             const 
             nombre = document.getElementById("nombre").value.trim();
 
@@ -2874,13 +2958,13 @@ window.onload = () => {
                 return;
             }
 
-            const idBloque = `${fecha}-${hora}`;
+            const idBloque = `${fecha}-${hora}:${minutos}`;
 
             reservasRef.once("value", snapshot => {
                 let ocupada = false;
                 snapshot.forEach(child => {
                     const r = child.val();
-                    if (`${r.fecha}-${r.hora}` === idBloque) {
+                    if (`${r.fecha}-${r.hora}:${r.minutos}` === idBloque) {
                         ocupada = true;
                     }
                 });
@@ -2890,10 +2974,11 @@ window.onload = () => {
                     reservasRef.push({
                         fecha,
                         hora,
-                        nombre
+                        nombre,
+                        minutos
                     });
                     document.getElementById("modal-reservada").classList.remove("hidden");
-                    enviarMensajeWhatsApp(nombre, fecha, hora);
+                    enviarMensajeWhatsApp(nombre, fecha, hora, minutos);
                 }
             });
         }
@@ -2990,37 +3075,52 @@ window.onload = () => {
 
 
 
-
 function mostrarReservaEnLista(reserva) {
   const lista = document.getElementById("reservas-lista");
   const item = document.createElement("li");
-  item.textContent = `${reserva.emoji} ${reserva.fecha} - ${reserva.hora} - Auto ${reserva.auto}`;
+
+  const emojiCompleto = autos[reserva.auto] || "";
+  const emojiColor = emojiCompleto.slice(-2); // último emoji (color)
+  const color = obtenerColorDesdeEmoji(emojiColor);
+
+  item.innerHTML = `
+    <span class="fecha">${reserva.fecha}</span> -
+    <span class="hora">${reserva.hora}:${reserva.minutos}</span> -
+    <span class="auto" style="color:${color}; font-weight:bold;">Auto ${reserva.auto}</span>
+  `;
+
+  item.className = "reserva-item";
+  item.style.borderLeft = `8px solid ${color}`; // ← aquí se aplica el color dinámico// para que el contenido no quede pegado al borde
+
   lista.appendChild(item);
 }
 
 
 
-
 function guardarReserva(fecha, hora, auto, emoji) {
+  const minutos = document.getElementById("minutos").value;
+
   const nuevaReserva = {
     fecha: fecha,
     hora: hora,
     auto: auto,
-    emoji: emoji
-  };  
+    emoji: emoji,
+    minutos: minutos
+  };
 
   // Guarda en la lista general
   database.ref("reservas-lista").push(nuevaReserva);
 
   // Marca como reservado para esa hora
-database.ref(`autos-reservados/${fecha}/${hora}`).push({
-  auto: auto,
-  emoji: emoji
-});
-
+  database.ref(`autos-reservados/${fecha}/${hora}`).push({
+    auto: auto,
+    emoji: emoji,
+    minutos: minutos
+  });
 
   mostrarReservaEnLista(nuevaReserva);
 }
+
 
 
 
@@ -3101,7 +3201,7 @@ database.ref(`autos-reservados/${fecha}/${hora}`).push({
         }
 
   function abrirVentanaHorarios(fecha) {
-  tituloVentana.textContent = `HORAS DISPONIBLES ${fecha}`;
+  tituloVentana.textContent = `HORAS DISPONIBLES ㅤ ${fecha}`;
   horasDisponibles.innerHTML = "";
   const horasReservadas = reservasPorDia[fecha] || [];
   const diaSemana = new Date(fecha).getDay(); // 0 = Domingo
@@ -3117,14 +3217,14 @@ database.ref(`autos-reservados/${fecha}/${hora}`).push({
       bloque.textContent = `⛔ ${hora}`;
     } else {
       bloque.classList.add("horaLibre");
-      bloque.textContent = `✅ ${hora}`;
+      bloque.textContent = ` ${hora}`;
       bloque.onclick = () => {
   document.getElementById("hora").value = hora;
   fechaInput.value = fecha;
 
   ventanaHorarios.style.display = "none";
 
-  // ✅ Mostrar directamente el modal de autos
+  //  Mostrar directamente el modal de autos
   document.getElementById("modal-autos").classList.remove("hidden");
   mostrarBotonesAutos(hora);
 };
@@ -3153,13 +3253,13 @@ window.onclick = (e) => {
             const nombre = document.getElementById("nombre")?.value.trim();
             const fecha = fechaInput.value;
             const hora = document.getElementById("hora").value;
-
+const minutos = document.getElementById("minutos").value;
             if (!nombre || !fecha || !hora) {
                 alert("Faltan datos: asegúrate de ingresar nombre, fecha y hora");
                 return;
             }
             const numeroDestino = "56930280942";
-            const mensaje = `Hola, soy ${nombre}. Quiero reservar para el día ${fecha} a las ${hora}.`;
+            const mensaje = `Hola, soy ${nombre}. Quiero reservar para el día ${fecha} a las ${hora}:${minutos}.`;
             const url = `https://wa.me/${numeroDestino}?text=${encodeURIComponent(mensaje)}`;
             window.open(url, "_blank");
         }
@@ -3247,6 +3347,25 @@ window.onclick = (e) => {
         
     </script>
     <style>/* Dentro de la etiqueta <style> */
+
+    .reserva-item {
+  background: linear-gradient(to bottom, darkgray, #000, black);
+
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+
+}
+
+.reserva-item:hover {
+  background-color: #e0f7fa;
+}
+
+
+
 .diaCalendario.diaPasado {
     background-color: #5f5f5f; /* Un tono de gris claro */
     color: #fff; /* El color del texto en un gris más oscuro */
