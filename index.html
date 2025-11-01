@@ -1368,7 +1368,7 @@ function ocultarBotonBorrar() {
   <div id="reserva-formulario">
   <h3>Selecciona un vehículo para la hora: <span id="horaElegida"></span></h3>
   <label for="minutos">Escribe el minuto de la Reserva <span>(REQUERIDO)</span></label>
-  <input type="number" id="minutos">
+  <input type="number" id="minutos" value="30">
 </div>
 
   <div id="botones-autos"></div>
@@ -1603,6 +1603,14 @@ button {
        background: linear-gradient(to bottom, yellow, #000, black);
 }
 
+.check-green {
+  background: green !important; /* rojo claro */
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 5px;
+  cursor: pointer;
+}
 
 /* Reservas en pantalla */
 .reserva-item {
@@ -2846,16 +2854,18 @@ function mostrarBotonesAutos(hora) {
 
         //  Botón para liberar el auto
         const liberarBtn = document.createElement("button");
-liberarBtn.textContent = "";
+liberarBtn.textContent = "❎⏰";
 liberarBtn.className = "check-green";
 liberarBtn.onclick = () => {
   showConfirm(`¿Liberar el auto ${numero} para la hora ${hora}?`, (confirmar) => {
     if (confirmar) {
       liberarReserva(fecha, hora, numero);
+      eliminarReservaDeLista(numero, fecha, hora); // ← nueva función
       mostrarBotonesAutos(hora); // refresca la vista
     }
   });
 };
+
 grupo.appendChild(liberarBtn);
 
       } else {
@@ -2879,6 +2889,26 @@ grupo.appendChild(liberarBtn);
 }
 
 
+function eliminarReservaDeLista(auto, fecha, hora) {
+  const ref = database.ref("reservas-lista");
+  ref.once("value", (snapshot) => {
+    snapshot.forEach((child) => {
+      const reserva = child.val();
+      if (reserva.auto == auto && reserva.fecha == fecha && reserva.hora == hora) {
+        ref.child(child.key).remove(); // elimina del backend
+
+        // También elimina del DOM si está visible
+        const lista = document.getElementById("reservas-lista");
+        const items = lista.querySelectorAll("li");
+        items.forEach((item) => {
+          if (item.textContent.includes(`Auto ${auto}`) && item.textContent.includes(`${hora}:${reserva.minutos}`)) {
+            item.remove();
+          }
+        });
+      }
+    });
+  });
+}
 
 
 function liberarReserva(fecha, hora, auto) {
@@ -3108,10 +3138,12 @@ function guardarReserva(fecha, hora, auto, emoji) {
     minutos: minutos
   };
 
-  // Guarda en la lista general
-  database.ref("reservas-lista").push(nuevaReserva);
+  // Guarda en la lista general y captura el ID
+  const ref = database.ref("reservas-lista").push();
+  ref.set(nuevaReserva);
+  nuevaReserva.id = ref.key; // Guarda el ID en el objeto local
 
-  // Marca como reservado para esa hora
+  // Guarda en autos-reservados
   database.ref(`autos-reservados/${fecha}/${hora}`).push({
     auto: auto,
     emoji: emoji,
@@ -3120,6 +3152,7 @@ function guardarReserva(fecha, hora, auto, emoji) {
 
   mostrarReservaEnLista(nuevaReserva);
 }
+
 
 
 
@@ -3414,5 +3447,21 @@ const minutos = document.getElementById("minutos").value;
 
 
 </script>
+<style>
+  .check-green{
+font-size: 100%;
+  }
+
+  .check-green {
+      background: linear-gradient(to bottom, rgb(253, 23, 23), darkred) !important;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+</style>
+
 </body>
 </html>
