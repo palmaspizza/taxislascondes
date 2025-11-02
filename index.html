@@ -149,6 +149,7 @@ import { getDatabase } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-
 <div id="cuadroCalendario"></div>
 <br><br><br>
 <h1 style="color: red !important;">⛔Reservadas⛔</h1>
+        <input style="border: 1px solid red;" type="text" id="buscadorGlobal" placeholder="Buscar... por Año, Mes, Día o Nombre" />
 <div id="reservas-lista"></div>
     <script>
 document.getElementById('solicitar').addEventListener('click', async () => {
@@ -1385,6 +1386,7 @@ function ocultarBotonBorrar() {
   <h3>Selecciona un vehículo para la hora: <span id="horaElegida"></span></h3>
   <label for="minutos">Escribe el minuto de la Reserva <span>(REQUERIDO)</span></label>
   <input type="number" id="minutos" value="30">
+  <input type="nombre" id="nombre">
 </div>
 
   <div id="botones-autos"></div>
@@ -2917,7 +2919,7 @@ function eliminarReservaDeLista(auto, fecha, hora) {
         const lista = document.getElementById("reservas-lista");
         const items = lista.querySelectorAll("li");
         items.forEach((item) => {
-          if (item.textContent.includes(`Auto ${auto}`) && item.textContent.includes(`${hora}:${reserva.minutos}`)) {
+          if (item.textContent.includes(`Auto ${auto}`) && item.textContent.includes(`${hora}:${reserva.minutos} - ${reserva.nombre} `)) {
             item.remove();
           }
         });
@@ -3010,7 +3012,7 @@ window.onload = () => {
                 let ocupada = false;
                 snapshot.forEach(child => {
                     const r = child.val();
-                    if (`${r.fecha}-${r.hora}:${r.minutos}` === idBloque) {
+                    if (`${r.fecha}-${r.hora}:${r.minutos}${r.nombre}` === idBloque) {
                         ocupada = true;
                     }
                 });
@@ -3132,7 +3134,7 @@ function mostrarReservaEnLista(reserva) {
   item.innerHTML = `
     <span class="fecha">${reserva.fecha}</span> -
     <span class="hora">${reserva.hora}:${reserva.minutos}</span> -
-    <span class="auto" style="color:${color}; font-weight:bold;">Auto ${reserva.auto}</span>
+    <span class="auto" style="color:${color}; font-weight:bold; box-shadow: 1px 0px 0px #FFF;">Auto ${reserva.auto} - <span style="color: white !important; text-decoration: gold underline; ">👤 ${reserva.nombre}</span></span>
   `;
 
   item.className = "reserva-item";
@@ -3143,15 +3145,16 @@ function mostrarReservaEnLista(reserva) {
 
 
 
-function guardarReserva(fecha, hora, auto, emoji) {
+function guardarReserva(fecha, hora, auto, emoji,) {
   const minutos = document.getElementById("minutos").value;
-
+const nombre = document.getElementById("nombre").value;
   const nuevaReserva = {
     fecha: fecha,
     hora: hora,
     auto: auto,
     emoji: emoji,
-    minutos: minutos
+    minutos: minutos,
+    nombre: nombre
   };
 
   // Guarda en la lista general y captura el ID
@@ -3163,7 +3166,8 @@ function guardarReserva(fecha, hora, auto, emoji) {
   database.ref(`autos-reservados/${fecha}/${hora}`).push({
     auto: auto,
     emoji: emoji,
-    minutos: minutos
+    minutos: minutos,
+    nombre: nombre
   });
 
   mostrarReservaEnLista(nuevaReserva);
@@ -3301,7 +3305,7 @@ window.onclick = (e) => {
         function enviarMensajeWhatsApp() {
             const nombre = document.getElementById("nombre")?.value.trim();
             const fecha = fechaInput.value;
-            const hora = document.getElementById("hora").value;
+            const hora = document.getElementById("hora");
 const minutos = document.getElementById("minutos").value;
             if (!nombre || !fecha || !hora) {
                 alert("Faltan datos: asegúrate de ingresar nombre, fecha y hora");
