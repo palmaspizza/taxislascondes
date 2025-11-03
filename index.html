@@ -819,7 +819,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const diaPasado = fechaCelda < hoy;
 
                 if (diaPasado) {
-                    celda.classList.add("diaPasado");
+                  
                     celda.title = "Este día ya ha pasado";
                 } else if (estaBloqueado) {
                     celda.classList.add("diaBloqueado");
@@ -833,11 +833,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 if (diaPasado || (!modoBloqueoDias && estaBloqueado)) {
-                    celda.style.pointerEvents = "none";
+                  
                 }
 
                 celda.onclick = () => {
-                    if (diaPasado) return;
+                   
 
                     if (modoGestionHorarios) {
                         fechaSeleccionadaParaConfigurar = fechaActual;
@@ -2484,6 +2484,70 @@ let modoAdmin = false;
 
 
 
+function cargarReservasAgrupadas() {
+  const ref = database.ref("reservas-lista");
+  ref.once("value", (snapshot) => {
+    const reservasPorFecha = {};
+
+    snapshot.forEach((child) => {
+      const reserva = child.val();
+      const fecha = reserva.fecha;
+
+      if (!reservasPorFecha[fecha]) {
+        reservasPorFecha[fecha] = [];
+      }
+
+      reservasPorFecha[fecha].push(reserva);
+    });
+
+    mostrarReservasAgrupadas(reservasPorFecha);
+  });
+}
+
+function mostrarReservasAgrupadas(reservasPorFecha) {
+  const lista = document.getElementById("reservas-lista");
+  lista.innerHTML = ""; // limpiar
+
+  // Ordenar fechas
+  const fechasOrdenadas = Object.keys(reservasPorFecha).sort();
+
+  fechasOrdenadas.forEach((fecha) => {
+    // Crear panel para el día
+    const panel = document.createElement("div");
+    panel.className = "panel-dia";
+    panel.innerHTML = `<h4>${fecha}</h4>`;
+
+    // Ordenar reservas por hora:minutos
+    reservasPorFecha[fecha].sort((a, b) => {
+      const horaA = new Date(`${a.fecha}T${a.hora.padStart(2, '0')}:${a.minutos.padStart(2, '0')}`);
+      const horaB = new Date(`${b.fecha}T${b.hora.padStart(2, '0')}:${b.minutos.padStart(2, '0')}`);
+      return horaA - horaB;
+    });
+
+    // Agregar cada reserva al panel
+    reservasPorFecha[fecha].forEach((reserva) => {
+      const item = document.createElement("div");
+      item.className = "reserva-item";
+
+      const emojiCompleto = autos[reserva.auto] || "";
+      const emojiColor = emojiCompleto.slice(-2);
+      const color = obtenerColorDesdeEmoji(emojiColor);
+
+      item.style.borderLeft = `6px solid ${color}`;
+      item.style.paddingLeft = "10px";
+
+      item.innerHTML = `
+        <span class="nombre">${reserva.nombre}</span> -
+        <span class="hora">${reserva.hora}:${reserva.minutos}</span> -
+        <span class="auto" style="color:${color}; font-weight:bold;">Auto ${reserva.auto}</span>
+      `;
+
+      panel.appendChild(item);
+    });
+
+    lista.appendChild(panel);
+  });
+}
 
 
         
@@ -2594,13 +2658,10 @@ const estaBloqueado = diasBloqueados.includes(fechaActual) || horarioDelDia.leng
 
         // **NUEVA LÓGICA:** Verificar si el día ya pasó
 
-        const diaPasado = fechaCelda < hoy;
+       
 
         // Modificar las clases para el estado del día
-        if (diaPasado) {
-            celda.classList.add("diaPasado");
-            celda.title = "Este día ya ha pasado";
-        } else if (estaBloqueado) {
+       if (estaBloqueado) {
             celda.classList.add("diaBloqueado");
             celda.title = "Día bloqueado por el administrador";
         } else if (estaOcupado) {
@@ -2612,14 +2673,12 @@ const estaBloqueado = diasBloqueados.includes(fechaActual) || horarioDelDia.leng
         }
         
         // **NUEVA LÓGICA:** Deshabilitar el clic si el día ya pasó
-        if (diaPasado || (!modoBloqueoDias && estaBloqueado)) {
-            celda.style.pointerEvents = "none";
-        }
+       
 
         // Modificar el `onclick` para que solo se ejecute si no es un día pasado
         celda.onclick = () => {
-            if (diaPasado) return; // Salir de la función si el día ya pasó
-            
+          
+          
             if (modoGestionHorarios) {
                 fechaSeleccionadaParaConfigurar = fechaActual;
                 abrirVentanaConfiguracionHorarios();
@@ -3014,6 +3073,7 @@ window.onload = cargarReservas;
 
 
 window.onload = () => {
+  cargarReservasAgrupadas();
   cargarReservasOrdenadas();
   cargarReservas(); // si ya tienes esto, déjalo
 
@@ -3165,20 +3225,25 @@ function mostrarReservaEnLista(reserva) {
   const item = document.createElement("li");
 
   const emojiCompleto = autos[reserva.auto] || "";
-  const emojiColor = emojiCompleto.slice(-2); // último emoji (color)
+  const emojiColor = emojiCompleto.slice(-2);
   const color = obtenerColorDesdeEmoji(emojiColor);
 
   item.innerHTML = `
+    <span class="nombre">${reserva.nombre}</span> -
     <span class="fecha">${reserva.fecha}</span> -
     <span class="hora">${reserva.hora}:${reserva.minutos}</span> -
-    <span class="auto" style="color:${color}; font-weight:bold; box-shadow: 1px 0px 0px #FFF;">Auto ${reserva.auto} - <span style="color: white !important; text-decoration: gold underline; ">👤 ${reserva.nombre}</span></span>
+    <span class="auto" style="color:${color}; font-weight:bold;">Auto ${reserva.auto}</span>
   `;
 
   item.className = "reserva-item";
-  item.style.borderLeft = `8px solid ${color}`; // ← aquí se aplica el color dinámico// para que el contenido no quede pegado al borde
+  item.style.borderLeft = `6px solid ${color}`;
+  item.style.paddingLeft = "10px";
+
+  item.setAttribute("data-fecha", reserva.fecha); // ← aquí
 
   lista.appendChild(item);
 }
+
 
 
 
@@ -3456,12 +3521,7 @@ const minutos = document.getElementById("minutos").value;
 
 
 
-.diaCalendario.diaPasado {
-    background-color: #5f5f5f; /* Un tono de gris claro */
-    color: #fff; /* El color del texto en un gris más oscuro */
-    cursor: not-allowed;
-    pointer-events: none; /* Esto evita que se pueda hacer clic en el día */
-}</style>
+</style>
 <!-- Modal personalizado -->
 <div id="custom-modal" class="modal hidden">
   <div class="modal-content">
@@ -3516,6 +3576,26 @@ font-size: 100%;
   padding: 8px;
   border-radius: 5px;
   cursor: pointer;
+}
+
+.panel-dia {
+  background-color: #444;
+  margin-bottom: 20px;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.panel-dia h4 {
+  color: yellow;
+  margin-bottom: 10px;
+}
+
+.reserva-item {
+  background-color: #333;
+  margin-bottom: 6px;
+  padding: 8px;
+  border-radius: 6px;
+  color: white;
 }
 
 </style>
