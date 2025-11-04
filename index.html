@@ -141,9 +141,7 @@ import { getDatabase } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-
     }
   }
 </script>
-
-   <button onclick="actiwar();cerrarModal('modal-control');"  style="font-size: 74%; border: 0px solid red;" id="activarBloqueoDias">🔒 Marcar Días cerrados</button>
-       <button onclick="desactiwar();ocultarbotonesdecierre()" style="font-size: 74%; border: 2px solid red;" hidden id="desactivarBloqueoDias"> ❌Desactivar bloqueo</button>
+ <button onclick="desactiwar();ocultarbotonesdecierre()" style="font-size: 74%; border: 2px solid red;" hidden id="desactivarBloqueoDias"> ❌Desactivar bloqueo</button>
    <br><br><br>    Selecciona un día
       <div class="dias-semana"></div>
 <div id="cuadroCalendario"></div>
@@ -886,13 +884,31 @@ document.addEventListener('DOMContentLoaded', function() {
             if(botonMostrar) botonMostrar.addEventListener('click', toggleMenu);
             if(botonOcultar) botonOcultar.addEventListener('click', toggleMenu);
         });
+function liberarhoras() {
+  document.querySelectorAll(".check-green").forEach(boton => {
+    boton.classList.add("visible");
+  });
+}
+  document.getElementById("clave-ingresarwx").addEventListener("click", function () {
+  const clave = document.getElementById("clave-inputwx").value;
+
+  if (clave === "123") {
+    liberarhoras();
+  } else {
+    alert("Clave incorrecta");
+  }
+});
+
+
 
 
     </script>
-                <br><br>
-                <button style="background-color: rgb(65, 65, 65);" onclick="borrarHorasMesHastaHoy()">📜 Borrar reservas antiguas del MES</button>
-
-                <br><br>
+ 
+     <br><br>
+    
+  <button onclick="actiwar();cerrarModal('modal-control');"  style="font-size: 74%; border: 0px solid red;" id="activarBloqueoDias">🔒 Marcar Días cerrados</button>
+      
+               <br><br>   <button id="clave-ingresarwx" onclick="liberarhoras();cerrarModal('modal-control');" style="margin-top:10px;">LIBERAR HORAS</button><br><br>
                 <button style="font-size: 150%; background-color: red;" onclick="cerrarModal('modal-control')">Cerrar Panel de Control</button>
             </div>
         </div>
@@ -960,7 +976,8 @@ document.addEventListener('DOMContentLoaded', function() {
             function actiwar() {
                 document.getElementById("desactivarBloqueoDias").hidden = false;
                 document.getElementById("cerrartodoslos-button").hidden = false;
-            }
+         document.getElementById('modal-autos').style.display = 'none';
+              }
 
             function desactiwar() {
                 document.getElementById("desactivarBloqueoDias").hidden = true;
@@ -1379,10 +1396,19 @@ function ocultarBotonBorrar() {
 
 </style>
 <div  id="modal-autos" class="hidden">
+<script>
 
- <button type="button" onclick="document.getElementById('modal-autos').classList.add('hidden');" >CERRAR</button>   
+</script>
+ <button type="button" onclick="document.getElementById('modal-autos').classList.add('hidden');" style="background: red !important;" >CERRAR</button>   
   
-  <div id="reserva-formulario">
+  <div id="reserva-formulario">      
+    <button type="button" id="liberarhorasbutton" onclick="document.getElementById('modal-acceso').classList.remove('fantasma');">Habilitar: Liberar horas</button>
+ <div id="clave-modalwx" style="display:none; position:fixed; top:30%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border:2px solid #333; z-index:1000;">
+  <label for="clave-inputwx">Ingresa la clave de 4 dígitos:</label><br>
+  <input type="password" id="clave-inputwx" maxlength="4" style="margin-top:10px;"><br>
+
+</div>
+
   <h3>Selecciona un vehículo para la hora: <span id="horaElegida"></span></h3>
   <label for="minutos">Escribe el minuto de la Reserva <span>(REQUERIDO)</span></label>
   <input type="number" id="minutos" value="00">
@@ -1628,8 +1654,11 @@ button {
   padding: 8px;
   border-radius: 5px;
   cursor: pointer;
+  display: none;
 }
-
+.visible{
+  display: block !important;
+}
 /* Reservas en pantalla */
 .reserva-item {
   background-color: #2b2b2b;
@@ -2378,6 +2407,68 @@ const firebaseConfig = {
 const database = firebase.database();
 const autosReservadosPorHora = {};
 
+
+// script.js (función selectVehicle)
+function selectVehicle(vehicleId, time) {
+    if (!allReservations[time]) {
+        // Ahora es un array para poder ordenarlo
+        allReservations[time] = []; 
+    }
+
+    // Comprobación de disponibilidad (aún crucial, basada en si el array contiene ese id)
+    const isReserved = allReservations[time].some(res => res.id === vehicleId);
+    if (isReserved) {
+        modalMessage.textContent = `El auto ${vehicleId} ya está reservado para ${time}.`;
+        return;
+    }
+    
+    const vehicleEmoji = vehicles[vehicleId];
+    
+    // 1. Guardar como un objeto con un timestamp de creación (la hora exacta)
+    const reservationData = {
+        id: vehicleId,
+        emoji: vehicleEmoji,
+        timestamp: Date.now() // ¡Guarda el momento exacto en milisegundos!
+    };
+    
+    // 2. Añadir el objeto al array de reservas para esa hora
+    allReservations[time].push(reservationData);
+
+    modalMessage.textContent = `Auto ${vehicleId} ${vehicleEmoji} reservado y bloqueado para ${time}.`;
+    
+    // ... (resto de la lógica, como openVehicleModal(time) )
+    updateReservationDisplay(); 
+}
+
+
+function generarPanelesPorFecha() {
+  const contenedor = document.getElementById("reservas-paneles");
+  contenedor.innerHTML = "";
+
+  const fechasUnicas = [...new Set(reservas.map(r => r.fecha))];
+
+  fechasUnicas.forEach(fecha => {
+    const panel = document.createElement("div");
+    panel.className = "panel";
+    panel.setAttribute("data-fecha", fecha);
+
+    const titulo = document.createElement("h3");
+    titulo.textContent = `Reservas del ${fecha}`;
+    panel.appendChild(titulo);
+
+    const lista = document.createElement("ul");
+    lista.className = "reservas-lista";
+    panel.appendChild(lista);
+
+    contenedor.appendChild(panel);
+  });
+}
+
+
+
+
+
+
 function abrirSelectorDeAutos(hora) {
   const modal = document.getElementById("modal-autos");
   const contenedor = document.getElementById("botones-autos");
@@ -2481,8 +2572,49 @@ let modoAdmin = false;
         });
 
 
+let fechaSeleccionada = null;
+
+document.querySelectorAll('.dia-calendario').forEach(dia => {
+  dia.addEventListener('click', () => {
+    fechaSeleccionada = dia.dataset.fecha; // Asegúrate que cada día tenga data-fecha="YYYY-MM-DD"
+    mostrarReservasDelDia(fechaSeleccionada);
+    abrirModalHorarios(fechaSeleccionada);
+  });
+});
+
+function mostrarReservasDelDia(fecha) {
+  const contenedor = document.getElementById('lista-reservas');
+  contenedor.innerHTML = ''; // Limpiar contenido anterior
 
 
+
+  reservasDelDia.forEach(reserva => {
+    const div = document.createElement('div');
+    div.className = 'reserva';
+    div.textContent = `${reserva.hora} - ${reserva.nombre}`;
+    contenedor.appendChild(div);
+  });
+  mostrarTodasLasReservasOrdenadas();
+}
+
+function mostrarTodasLasReservasOrdenadas() {
+  const contenedor = document.getElementById('lista-reservas');
+  contenedor.innerHTML = '';
+
+  // Ordenar todas las reservas por hora (sin importar fecha, color, auto, etc.)
+  const reservasOrdenadas = reservas.slice().sort((a, b) => {
+    const [hA, mA] = a.hora.split(':').map(Number);
+    const [hB, mB] = b.hora.split(':').map(Number);
+    return hA - hB || mA - mB;
+  });
+
+  reservasOrdenadas.forEach(reserva => {
+    const div = document.createElement('div');
+    div.className = 'reserva';
+    div.textContent = `${reserva.hora} - ${reserva.nombre}`;
+    contenedor.appendChild(div);
+  });
+}
 
 function cargarReservasAgrupadas() {
   const ref = database.ref("reservas-lista");
@@ -2572,11 +2704,22 @@ reservas.sort((a, b) => {
     // Mostrar en la lista
 
     lista.innerHTML = ""; // limpiar antes de mostrar
+   reservas.sort((a, b) => {
+  const totalA = Number(a.hora) * 60 + Number(a.minutos);
+  const totalB = Number(b.hora) * 60 + Number(b.minutos);
+  return totalA - totalB;
+});
+
+
     reservas.forEach((reserva) => {
       mostrarReservaEnLista(reserva);
     });
   });
 }
+
+
+
+
 
 
         function ingresarllave() {
@@ -2740,6 +2883,7 @@ function habilitarDiaDeLaSemana(dia) {
 
         window.addEventListener("DOMContentLoaded", () => {
             actualizarBarraMes();
+              actualizarListaReservas();
             botonDesactivarBloqueo.style.display = 'none';
         });
 
@@ -3072,9 +3216,15 @@ window.onload = cargarReservas;
 
 
 window.onload = () => {
+
   cargarReservasAgrupadas();
   cargarReservasOrdenadas();
   cargarReservas(); // si ya tienes esto, déjalo
+
+generarPanelesPorFecha();
+generarPanelesPorFecha();
+actualizarListaReservas();
+
 
   document.getElementById("admin-btn").onclick = () => {
     const clave = prompt("Introduce la clave de administrador (4 dígitos):");
@@ -3087,6 +3237,34 @@ window.onload = () => {
     }
   };
 };
+
+
+function actualizarListaReservas() {
+  const reservasPorFecha = {};
+
+  reservas.forEach(reserva => {
+    if (!reservasPorFecha[reserva.fecha]) {
+      reservasPorFecha[reserva.fecha] = [];
+    }
+    reservasPorFecha[reserva.fecha].push(reserva);
+  });
+
+  Object.keys(reservasPorFecha).forEach(fecha => {
+    const grupo = reservasPorFecha[fecha];
+
+    grupo.sort((a, b) => {
+      const totalA = Number(a.hora) * 60 + Number(a.minutos);
+      const totalB = Number(b.hora) * 60 + Number(b.minutos);
+      return totalA - totalB;
+    });
+
+    grupo.forEach(reserva => {
+      mostrarReservaEnLista(reserva);
+    });
+  });
+}
+
+
 
 
 
@@ -3216,11 +3394,42 @@ window.onload = () => {
         });
 
 
+function generarPanelesPorFecha() {
+  const contenedor = document.getElementById("reservas-paneles");
+  contenedor.innerHTML = "";
 
+  // Agrupar reservas por fecha
+  const reservasPorFecha = {};
 
+  reservas.forEach((reserva) => {
+    if (!reservasPorFecha[reserva.fecha]) {
+      reservasPorFecha[reserva.fecha] = [];
+    }
+    reservasPorFecha[reserva.fecha].push(reserva);
+  });
+
+  // Crear un panel por fecha
+  Object.keys(reservasPorFecha).forEach((fecha) => {
+    const panel = document.createElement("div");
+    panel.className = "panel";
+    panel.setAttribute("data-fecha", fecha);
+
+    const titulo = document.createElement("h3");
+    titulo.textContent = `Reservas del ${fecha}`;
+    panel.appendChild(titulo);
+
+    const lista = document.createElement("ul");
+    lista.className = "reservas-lista";
+    panel.appendChild(lista);
+
+    contenedor.appendChild(panel);
+  });
+}
 
 function mostrarReservaEnLista(reserva) {
-  const lista = document.getElementById("reservas-lista");
+  const lista = document.querySelector(`.panel[data-fecha="${reserva.fecha}"] .reservas-lista`);
+  if (!lista) return;
+
   const item = document.createElement("li");
 
   const emojiCompleto = autos[reserva.auto] || "";
@@ -3229,7 +3438,6 @@ function mostrarReservaEnLista(reserva) {
 
   item.innerHTML = `
     <span class="nombre">${reserva.nombre}</span> -
-    <span class="fecha">${reserva.fecha}</span> -
     <span class="hora">${reserva.hora}:${reserva.minutos}</span> -
     <span class="auto" style="color:${color}; font-weight:bold;">Auto ${reserva.auto}</span>
   `;
@@ -3238,10 +3446,9 @@ function mostrarReservaEnLista(reserva) {
   item.style.borderLeft = `6px solid ${color}`;
   item.style.paddingLeft = "10px";
 
-  item.setAttribute("data-fecha", reserva.fecha); // ← aquí
-
   lista.appendChild(item);
 }
+
 
 
 
