@@ -1385,8 +1385,8 @@ function ocultarBotonBorrar() {
   <div id="reserva-formulario">
   <h3>Selecciona un vehículo para la hora: <span id="horaElegida"></span></h3>
   <label for="minutos">Escribe el minuto de la Reserva <span>(REQUERIDO)</span></label>
-  <input type="number" id="minutos" value="30">
-  <input type="nombre" id="nombre">
+  <input type="number" id="minutos" value="00">
+  <input type="nombre" id="nombre" placeholder="Esribe el nombre">
 </div>
 
   <div id="botones-autos"></div>
@@ -2562,16 +2562,15 @@ function mostrarReservasAgrupadas(reservasPorFecha) {
       const reserva = child.val();
       reservas.push(reserva);
     });
-
+reservas.sort((a, b) => {
+  const horaA = a.hora.split(':').map(Number);
+  const horaB = b.hora.split(':').map(Number);
+  return horaA[0] - horaB[0] || horaA[1] - horaB[1];
+});
     // Ordenar por fecha y hora
-    reservas.sort((a, b) => {
-      const fechaA = new Date(`${a.fecha}T${a.hora.padStart(2, '0')}:${a.minutos.padStart(2, '0')}`);
-      const fechaB = new Date(`${b.fecha}T${b.hora.padStart(2, '0')}:${b.minutos.padStart(2, '0')}`);
-      return fechaA - fechaB;
-    });
 
     // Mostrar en la lista
-    const lista = document.getElementById("reservas-lista");
+
     lista.innerHTML = ""; // limpiar antes de mostrar
     reservas.forEach((reserva) => {
       mostrarReservaEnLista(reserva);
