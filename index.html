@@ -2681,7 +2681,10 @@ function mostrarReservasDelDia(fecha) {
     reservasDelDia.forEach(reserva => {
       const div = document.createElement('div');
       div.className = 'reserva';
-      div.textContent = `${reserva.hora}:${reserva.minutos} - ${reserva.nombre} ${reserva.emoji}`;
+      div.innerHTML = `
+  <span class="hora-reserva">${reserva.hora}:${reserva.minutos}</span>
+  - ${reserva.nombre} ${reserva.emoji}
+`;
       div.setAttribute("data-id", reserva.key);
       contenedor.appendChild(div);
     });
@@ -2854,7 +2857,7 @@ item.dataset.id = reserva.id;
 
       item.innerHTML = `
         <span class="nombre">${reserva.nombre}</span> -
-        <span class="hora">${reserva.hora}:${reserva.minutos}</span> -
+        <span   class="hora hora-reserva">${reserva.hora}:${reserva.minutos}</span> -
         <span class="auto" style="color:${color}; font-weight:bold;">Auto ${reserva.auto}</span>
           <button class="mover-arriba">⇧</button>
   <button class="mover-abajo">⇩</button>
