@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TAXIS | Las Condes</title>
-    <link rel="stylesheet" href="styleone.css">
+    <link rel="stylesheet" href="taxis.css">
    
     <link rel="icon" href="https://i.ibb.co/m5WDvjFm/imagen-2025-10-22-173714897.png" type="image/x-icon">
 <meta property="og:title" content="TAXIS | Las Condes">
 <meta property="og:description" content="Reservar">
 <meta property="og:image" content="https://i.ibb.co/m5WDvjFm/imagen-2025-10-22-173714897.png">
 <meta property="og:type" content="website">
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -25,57 +26,7 @@ import { getDatabase } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-
 
 </script>
 </head>
-<style>
-    .modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
 
-.modal-content {
-  background: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  max-width: 300px;
-  text-align: center;
-  box-shadow: 0 0 10px rgba(0,0,0,0.3);
-}
-
-.modal-buttons {
-  margin-top: 15px;
-  display: flex;
-  justify-content: space-around;
-}
-
-.modal-buttons button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-#modal-confirm {
-  background-color: #4CAF50;
-  color: white;
-}
-
-#modal-cancel {
-  background-color: #ccc;
-  color: #fff;
-}
-
-.hidden {
-  display: none;
-}
-
-</style>
 <body>
     
     <!-- REMPLAZAR: "TAXIS | LAS CONDES" POR "EL NOMBRE DE LABARBER" -->
@@ -89,22 +40,8 @@ import { getDatabase } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-
 <!-- REMPLAZAR ESTE LINK POR EL LINK DEL LOGO: -->
 <!-- "https://i.ibb.co/m5WDvjFm/imagen-2025-10-22-173714897.png" -->
 <button onclick="location.reload()" class="reload-btn">🔄 Actualizar  / nuevos cambios</button>
-<style>
-  .reload-btn {
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  font-size: 16px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.reload-btn:hover {
-  background-color: #45a049;
-}
-
-</style>
+ <button onclick="probarOrdenReservas()" class="reload-btn" style="background: #4CAF50;">🧪 Probar orden de reservas</button>
+ 
 <div class="container">
         <div id="logo" style="
             width: 200px;
@@ -126,21 +63,18 @@ import { getDatabase } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-
         </div>
         <button id="solicitar" hidden>Solicitar notificaciones</button>
 <script>
-  async function enviar() {
-    try {
-      const response = await window.fetch('http://localhost:3000/enviar-notificaciones', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ titulo: 'Hola', mensaje: 'Mensaje desde el cliente' })
-      });
-
-      const result = await response.text();
-      console.log('Respuesta del servidor:', result);
-    } catch (error) {
-      console.error('Error al enviar la notificación:', error);
-    }
-  }
+  
 </script>
+<li class="reserva">
+  <span>Reserva 1</span>
+
+</li>
+<li class="reserva">
+  <span>Reserva 2</span>
+  <button class="mover-arriba">↑</button>
+  <button class="mover-abajo">↓</button>
+</li>
+
  <button onclick="desactiwar();ocultarbotonesdecierre()" style="font-size: 74%; border: 2px solid red;" hidden id="desactivarBloqueoDias"> ❌Desactivar bloqueo</button>
    <br><br><br>    Selecciona un día
       <div class="dias-semana"></div>
@@ -308,14 +242,106 @@ document.getElementById('solicitar').addEventListener('click', async () => {
 function mostrar(){
     document.getElementById("botonescierraxdiv").hidden = false;
 }
-    </script>
+    }
+
+    // Función de prueba para verificar el orden de las reservas
+    function probarOrdenReservas() {
+        console.log("=== PROBANDO ORDEN DE RESERVAS ===");
+        
+        firebase.database().ref("reservas-lista").once("value").then(snapshot => {
+            const reservasPorFecha = {};
+            
+            snapshot.forEach(child => {
+                const reserva = child.val();
+                reserva.id = child.key;
+                
+                if (!reservasPorFecha[reserva.fecha]) {
+                    reservasPorFecha[reserva.fecha] = [];
+                }
+                reservasPorFecha[reserva.fecha].push(reserva);
+            });
+            
+            console.log("Reservas por fecha:");
+            Object.keys(reservasPorFecha).sort().forEach(fecha => {
+                console.log(`\nFecha: ${fecha}`);
+                reservasPorFecha[fecha].sort((a, b) => a.orden - b.orden).forEach((reserva, index) => {
+                    console.log(`  ${index + 1}. ${reserva.hora}:${reserva.minutos} - ${reserva.nombre} (Orden: ${reserva.orden})`);
+                });
+            });
+            
+            console.log("=== FIN DE PRUEBA ===");
+            alert("Revisa la consola (F12) para ver el orden de las reservas");
+        });
+    }
+</script>
 
 
         <input type="month" hidden id="selectorMes"/>
 
 
 <style>
-    /* Estilos del modal */
+     .modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 300px;
+  text-align: center;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.modal-buttons {
+  margin-top: 15px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.modal-buttons button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#modal-confirm {
+  background-color: #4CAF50;
+  color: white;
+}
+
+#modal-cancel {
+  background-color: #ccc;
+  color: #fff;
+}
+
+.hidden {
+  display: none;
+}
+.reload-btn {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.reload-btn:hover {
+  background-color: #45a049;
+}
+  /* Estilos del modal */
 .modal-personalizado {
     display: none;
     position: fixed;
@@ -364,36 +390,7 @@ function mostrar(){
     from {top: -300px; opacity: 0}
     to {top: 0; opacity: 1}
 }
-</style>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-    const modal = document.getElementById("modalContenedor");
-    const botonAbrir = document.getElementById("abrirVentana");
-    const botonCerrar = document.getElementsByClassName("cerrar-modal-personalizado")[0];
-
-    // Asegúrate de que los elementos existen antes de añadir los eventos
-    if (botonAbrir) {
-        botonAbrir.onclick = function() {
-            modal.style.display = "block";
-        }
-    }
-
-    if (botonCerrar) {
-        botonCerrar.onclick = function() {
-            modal.style.display = "none";
-        }
-    }
-
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    }
-});
-</script>
- 
-    <style>
-         #ventanaEmergenteCierreDias {
+   #ventanaEmergenteCierreDias {
             display: none; /* Oculta por defecto */
             position: fixed; /* Se mantiene en su lugar */
             z-index: 9999; /* Por encima de todo */
@@ -434,59 +431,7 @@ function mostrar(){
             background-color: #bbb;
             color: #333;
         }
-    </style>
-
-       
-        <h1 style="text-shadow: #000 3px 3px 5px;" hidden>Hora</h1>
-        <div h style="margin-bottom: 10px;"></div>
-
-        <div id="modal-acceso" class="ventana-secreta fantasma">
-            <div class="caja-misteriosa">
-                <h3>ACCESO</h3>
-                  <br><br>
-       
-                  <button onclick="cerrarModal('modal-acceso')">Cerrar</button>
-                <input type="password" id="clave-input" maxlength="4" placeholder="Clave de 4 dígitos">
-               <br><br>
-             
-                     <button style="background-color: green;" onclick="validarClave();ingresarllave();">Ingresar</button>
-              </div>
-        </div>
-<script>
-    // La función que ya tienes para cerrar la modal principal
-function cerrarModal(id) {
-    document.getElementById(id).style.display = 'none';
-}
-
-// Función para cambiar a la vista de cierre de días
-function abrirVistaCierre() {
-    document.getElementById("contenido-principal").hidden = true;
-    document.getElementById("contenido-cierre").hidden = false;
-}
-
-// Función para volver a la vista principal del control
-function mostrarVistaPrincipal() {
-    document.getElementById("contenido-principal").hidden = false;
-    document.getElementById("contenido-cierre").hidden = true;
-}
-
-// Vincula la función `abrirVistaCierre` al clic del botón
-document.addEventListener('DOMContentLoaded', function() {
-    const botonVistaCierre = document.getElementById("abrir-vista-cierre");
-    if (botonVistaCierre) {
-        botonVistaCierre.onclick = abrirVistaCierre;
-    }
-});
-</script>
-        <div id="modal-control" class="ventana-secreta fantasma">
-            <div class="caja-misteriosa">
-                <h3>Control TAXIS</h3>
-   
-         
-              
-<style>
-     /* --- Estilos únicos para el menú desplegable --- */
-
+        
         #menuOpcionesContainer {
 
             position: relative;
@@ -560,123 +505,7 @@ document.addEventListener('DOMContentLoaded', function() {
             cursor: pointer;
 
         }
-</style>
-   <button id="ventanaEmergenteCierreDias">Gestionar cierre de días</button>
-<script>
-    function mostrarX(){
-        document.getElementById("contenidoEmergente").hidden = false;
-    }
-        function okultarX(){
-        document.getElementById("contenidoEmergente").hidden = true;
-    }
-</script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-    const botonesDiaSemana = document.querySelectorAll('.btn-dia-semana');
-
-    botonesDiaSemana.forEach(boton => {
-        boton.addEventListener('click', function() {
-            // El ícono se añade o se quita SOLO del botón actual.
-            this.classList.toggle('seleccionado');
-        });
-    });
-});
-function limpiarReservasMayoresAUnaño() {
-    const fechaLimite = new Date();
-    fechaLimite.setFullYear(fechaLimite.getFullYear() - 1);
-    const fechaLimiteTimestamp = fechaLimite.getTime();
-
-    // Obtener todas las reservas de la base de datos una sola vez
-    reservasRef.once('value')
-        .then(snapshot => {
-            const actualizaciones = {};
-            let hayReservasParaEliminar = false;
-
-            snapshot.forEach(childSnapshot => {
-                const reserva = childSnapshot.val();
-                const fechaReservaTimestamp = new Date(reserva.fecha).getTime();
-
-                // Si la reserva es más antigua que un año, la marcamos para eliminar
-                if (fechaReservaTimestamp < fechaLimiteTimestamp) {
-                    actualizaciones[childSnapshot.key] = null;
-                    hayReservasParaEliminar = true;
-                }
-            });
-
-            if (hayReservasParaEliminar) {
-                // Borrar las reservas antiguas usando una sola operación
-                return reservasRef.update(actualizaciones);
-            } else {
-                console.log("No se encontraron reservas con más de un año de antigüedad.");
-                return Promise.resolve();
-            }
-        })
-        .then(() => {
-            console.log("Reservas con más de un año de antigüedad eliminadas exitosamente.");
-        })
-        .catch(error => {
-            console.error("Error al eliminar las reservas antiguas: ", error);
-        });
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Llama a la función de limpieza de reservas al cargar la página
-    limpiarReservasMayoresAUnaño();
-
-    // Aquí iría el resto de tu código que se ejecuta al cargar la página,
-    // como la generación del calendario, etc.
-    generarCuadroCalendario();
-});
-</script>
-      <div style="background-color: grey; border: 2px solid white;" hidden id="contenidoEmergente">
- <h3>Opciones de cierre por día</h3>
- <button class="btn-dia-semana" data-dia="1" onclick="cerrarDiaDeLaSemana(1)">
-        Cerrar todos los Lunes <span class="icono">✔</span>
-    </button>
- <button class="btn-dia-semana" data-dia="1" style="background-color: green;" onclick="habilitarDiaDeLaSemana(1)">
-        Habilitar todos los Lunes <span class="icono">✔</span>
-    </button><br>
- <button class="btn-dia-semana" data-dia="2" onclick="cerrarDiaDeLaSemana(2)">
-        Cerrar todos los Martes <span class="icono">✔</span>
-    </button>
- <button class="btn-dia-semana" data-dia="2" style="background-color: green;" onclick="habilitarDiaDeLaSemana(2)">
-        Habilitar todos los Martes <span class="icono">✔</span>
-    </button><br>
- <button class="btn-dia-semana" data-dia="3" onclick="cerrarDiaDeLaSemana(3)">
-        Cerrar todos los Miércoles <span class="icono">✔</span>
-    </button>
- <button class="btn-dia-semana" data-dia="3" style="background-color: green;" onclick="habilitarDiaDeLaSemana(3)">
-        Habilitar todos los Miércoles <span class="icono">✔</span>
-    </button><br>
- <button class="btn-dia-semana" data-dia="4" onclick="cerrarDiaDeLaSemana(4)">
-        Cerrar todos los Jueves <span class="icono">✔</span>
-    </button>
- <button class="btn-dia-semana" data-dia="4" style="background-color: green;" onclick="habilitarDiaDeLaSemana(4)">
-        Habilitar todos los Jueves <span class="icono">✔</span>
-    </button><br>
- <button class="btn-dia-semana" data-dia="5" onclick="cerrarDiaDeLaSemana(5)">
-        Cerrar todos los Viernes <span class="icono">✔</span>
-    </button>
- <button class="btn-dia-semana" data-dia="5" style="background-color: green;" onclick="habilitarDiaDeLaSemana(5)">
-        Habilitar todos los Viernes <span class="icono">✔</span>
-    </button><br>
- <button class="btn-dia-semana" data-dia="6" onclick="cerrarDiaDeLaSemana(6)">
-        Cerrar todos los Sábados <span class="icono">✔</span>
-    </button>
- <button class="btn-dia-semana" data-dia="6" style="background-color: green;" onclick="habilitarDiaDeLaSemana(6)">
-        Habilitar todos los Sábados <span class="icono">✔</span>
-    </button><br>
- <button class="btn-dia-semana" data-dia="0" onclick="cerrarDiaDeLaSemana(0)">
-        Cerrar todos los Domingos <span class="icono">✔</span>
-    </button>
- <button class="btn-dia-semana" data-dia="0" style="background-color: green;" onclick="habilitarDiaDeLaSemana(0)">
-        Habilitar todos los Domingos <span class="icono">✔</span>
-    </button><br>
- <br>
- <button onclick="okultarX();" style="background-color: lightgray; color: red;">Cerrar Opciones de cierre</button>
-</div>
-    <style>
-        /* Animación para el botón */
+             /* Animación para el botón */
 @keyframes pop-in {
     from { transform: scale(0.9); opacity: 0.8; }
     to { transform: scale(1); opacity: 1; }
@@ -718,274 +547,7 @@ document.addEventListener('DOMContentLoaded', function() {
     background-color: #55a8e0;
     color: white;
 }
-    </style>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-    const botonesDiaSemana = document.querySelectorAll('.btn-dia-semana');
-    const botonCerrar = document.getElementById('btn-cerrar-menu'); // Asumo que este es el ID de tu botón cerrar
-
-    botonesDiaSemana.forEach(boton => {
-        boton.addEventListener('click', function() {
-            // Elimina la clase "seleccionado" de todos los botones
-            botonesDiaSemana.forEach(btn => btn.classList.remove('seleccionado'));
-            
-            // Añade la clase "seleccionado" solo al botón clicado
-            this.classList.add('seleccionado');
-
-            // Desliza la pantalla hacia el botón de "Cerrar"
-            if (botonCerrar) {
-                botonCerrar.scrollIntoView({ behavior: 'smooth', block: 'end' });
-            }
-        });
-    });
-});
-        // Aislamiento del código del modal para evitar conflictos
-    (function() {
-        const ventanaEmergente = document.getElementById("ventanaEmergenteCierreDias");
-        const btnAbrirVentana = document.getElementById("abrirVentana");
-        const btnCerrarVentana = document.getElementById("btnCerrarVentana");
-
-        function abrirVentanaEmergente() {
-            if (ventanaEmergente) {
-                ventanaEmergente.style.display = "block";
-            }
-        }
-
-        function cerrarVentanaEmergente() {
-            if (ventanaEmergente) {
-                ventanaEmergente.style.display = "none";
-            }
-        }
-
-        if (btnAbrirVentana) {
-            btnAbrirVentana.onclick = abrirVentanaEmergente;
-        }
-        
-        if (btnCerrarVentana) {
-            btnCerrarVentana.onclick = cerrarVentanaEmergente;
-        }
-
-        window.onclick = function(event) {
-            if (event.target === ventanaEmergente) {
-                cerrarVentanaEmergente();
-            }
-        };
-
-        // Asignar el cierre a los botones de cierre de día
-        document.querySelectorAll(".btn-cierre").forEach(btn => {
-            btn.addEventListener("click", cerrarVentanaEmergente);
-        });
-    })();
-    
-    // Al cargar la página, llama a la función para generar el calendario
-    document.addEventListener('DOMContentLoaded', generarCuadroCalendario);
-</script>
-    <div id="cuadroCalendario"></div>
-
-    <script>
-        function generarCuadroCalendario() {
-            const mesStr = `${fechaActualCalendario.getFullYear()}-${String(fechaActualCalendario.getMonth() + 1).padStart(2, "0")}`;
-            const cuadroCalendario = document.getElementById("cuadroCalendario");
-            cuadroCalendario.innerHTML = "";
-            const [anio, mes] = mesStr.split("-");
-            const fechaInicio = new Date(anio, mes - 1, 1);
-            const primerDiaSemana = fechaInicio.getDay();
-            const totalDias = new Date(anio, mes, 0).getDate();
-            const offset = primerDiaSemana === 0 ? 6 : primerDiaSemana - 1;
-
-            const hoy = new Date();
-            hoy.setHours(0, 0, 0, 0);
-
-            for (let i = 0; i < offset; i++) {
-                const vacio = document.createElement("div");
-                cuadroCalendario.appendChild(vacio);
-            }
-
-            for (let dia = 1; dia <= totalDias; dia++) {
-                const fechaActual = `${anio}-${String(mes).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
-                const celda = document.createElement("div");
-                celda.classList.add("diaCalendario");
-                celda.textContent = dia;
-
-                const fechaCelda = new Date(anio, mes - 1, dia);
-                const diaSemana = fechaCelda.getDay();
-
-                const horasReservadas = reservasPorDia[fechaActual] || [];
-                
-                const estaBloqueado = diasBloqueados.includes(fechaActual) || horarioDelDia.length === 0 || diasDeLaSemanaBloqueados.includes(diaSemana);
-                const estaOcupado = horasReservadas.length >= horarioDelDia.length;
-                const diaPasado = fechaCelda < hoy;
-
-                if (diaPasado) {
-                  
-                    celda.title = "Este día ya ha pasado";
-                } else if (estaBloqueado) {
-                    celda.classList.add("diaBloqueado");
-                    celda.title = "Día bloqueado por el administrador";
-                } else if (estaOcupado) {
-                    celda.classList.add("diaOcupado");
-                    celda.title = "Día con todas las horas reservadas";
-                } else {
-                    celda.classList.add("diaLibre");
-                    celda.title = "Día disponible";
-                }
-
-                if (diaPasado || (!modoBloqueoDias && estaBloqueado)) {
-                  
-                }
-
-                celda.onclick = () => {
-                   
-
-                    if (modoGestionHorarios) {
-                        fechaSeleccionadaParaConfigurar = fechaActual;
-                        abrirVentanaConfiguracionHorarios();
-                    } else if (modoBloqueoDias) {
-                        // Lógica de bloqueo
-                    } else {
-                        if (!estaBloqueado) {
-                            fechaInput.value = fechaActual;
-                            abrirVentanaHorarios(fechaActual);
-                        }
-                    }
-                };
-                cuadroCalendario.appendChild(celda);
-            }
-        }
-
- 
-        
-        function cerrarDiaDeLaSemana(dia) {
-            if (!diasDeLaSemanaBloqueados.includes(dia)) {
-                diasDeLaSemanaBloqueados.push(dia);
-            }
-            generarCuadroCalendario();
-        }
-
-        function habilitarDiaDeLaSemana(dia) {
-            const index = diasDeLaSemanaBloqueados.indexOf(dia);
-            if (index > -1) {
-                diasDeLaSemanaBloqueados.splice(index, 1);
-            }
-            generarCuadroCalendario();
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            generarCuadroCalendario();
-
-            const botonMostrar = document.getElementById("mostrarBotonesCierre");
-            const botonOcultar = document.getElementById("ocultarBotonesCierre");
-            const contenedorBotones = document.getElementById("botonesCierreContainer");
-
-            function toggleMenu() {
-                contenedorBotones.classList.toggle("menu-visible");
-            }
-
-            if(botonMostrar) botonMostrar.addEventListener('click', toggleMenu);
-            if(botonOcultar) botonOcultar.addEventListener('click', toggleMenu);
-        });
-function liberarhoras() {
-  document.querySelectorAll(".check-green").forEach(boton => {
-    boton.classList.add("visible");
-  });
-}
-  document.getElementById("clave-ingresarwx").addEventListener("click", function () {
-  const clave = document.getElementById("clave-inputwx").value;
-
-  if (clave === "123") {
-    liberarhoras();
-  } else {
-
-  }
-});
-
-
-
-
-    </script>
- 
-     <br><br>
-    
-  <button onclick="actiwar();cerrarModal('modal-control');"  style="font-size: 74%; border: 0px solid red;" id="activarBloqueoDias">🔒 Marcar Días cerrados</button>
-      
-               <br><br>   <button id="clave-ingresarwx" onclick="liberarhoras();cerrarModal('modal-control');" style="margin-top:10px;">LIBERAR HORAS</button><br><br>
-                <button style="font-size: 150%; background-color: red;" onclick="cerrarModal('modal-control')">Cerrar Panel de Control</button>
-            </div>
-        </div>
-<script>
-    function mostrarModalHorarios() {
-  // 1. Seleccionar el elemento div por su ID
-  const modal = document.getElementById('modal-configuracion-horarios');
-
-  // 2. Verificar si el elemento existe antes de manipularlo
-  if (modal) {
-    // 3. Eliminar la clase "fantasma"
-    modal.classList.remove('fantasma');
-    console.log('Se ha quitado la clase "fantasma" del modal.');
-  } else {
-    console.log('Error: No se encontró el elemento con el ID "modal-configuracion-horarios".');
-  }
-}
-</script>
-        <div id="modal-configuracion-horarios" class="ventana-secreta fantasma">
-            <div class="caja-misteriosa">
-                <h3 id="titulo-config-horarios">Configurar Horario</h3>
-                <p>🟩 Hora Disponible</p><br>
-                <p>🟥 Hora NO Disponible</p>
-                <p id="fecha-config-horarios"></p>
-                <br>
-                <div id="botones-horarios-predeterminados" style="display: flex; flex-direction: column; gap: 5px;">
-                  <button onclick="cerrarModal('modal-configuracion-horarios')">Cerrar</button>
-                                    <button  id="boton-horario-semana" style="background-color: yellow; border: 2px solid black;">Horario de Semana</button>
-                <button onclick="guardarHorarioPersonalizado()"style="background-color: green; border: 2px solid black;">Guardar Horario</button>
-                    <button  id="boton-horario-sabado" style="background-color: yellow; border: 2px solid black;" hidden>Horario de Sábado</button>
-                    <button hidden id="boton-horario-cerrado">Día Cerrado</button>
-                </div>
-                <hr>
-                <div id="botones-toggle-horas" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-                </div>
-                <br><br>
-
-                
-            </div>
-        </div>
-
-        <div id="modal-mensaje" class="ventana-secreta fantasma">
-         
-           <div class="caja-misteriosa">
-                <h3>Deja un mensaje mientras tu local está cerrado</h3>
-               <form action="">
-                 <input type="text" id="mensaje-cierre" placeholder="Escribe tu mensaje aquí">
-                <br><br>
-                <button type="button" onclick="guardarMensajeCierre()">Aceptar</button>
-               </form>
-            </div>
-
-        </div>
-
-
-
-        <input type="date" id="fecha" hidden class="" required>
-        
-        <center>
-            <input hidden type="time" id="hora">
-            <div style="margin-bottom: 10px;"></div>
-        </center>
-        
-        <script>
-            function actiwar() {
-                document.getElementById("desactivarBloqueoDias").hidden = false;
-                document.getElementById("cerrartodoslos-button").hidden = false;
-         document.getElementById('modal-autos').style.display = 'none';
-              }
-
-            function desactiwar() {
-                document.getElementById("desactivarBloqueoDias").hidden = true;
-             document.getElementById("cerrartodoslos-button").hidden = true;
-            }
-        </script>
-        <style>
-            /* Estilos para el título animado */
+      /* Estilos para el título animado */
 .titulo-animado {
     /* Estilos base que ya tienes o quieres */
     color: yellowred;
@@ -1012,20 +574,7 @@ function liberarhoras() {
         text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.7); /* Sombra inicial */
     }
 }
-        </style>
-        <div id="modal-horarios" class="modalBarberia">
-            <div style="background-color: #303030 !important; margin-top: 10px;"  class="contenidoModal">
-                <span id="cerrarVentana" class="cerrarModal">Cerrar</span>
-                <br>
-          <center>
-                  <h3 id="tituloVentana" class="titulo-animado" style="color: yellowred; text-shadow: 1px 1px 1px #000;"></h3>
-          </center>
-                <h3 style="color: #fff      ;">Selecciona la hora</h3>
-                      
-                
-               <div id="horasDisponibles"></div>
-<style>
-  .hidden {
+ .hidden {
   display: none;
 }
 #modal-autos {
@@ -1051,95 +600,7 @@ function liberarhoras() {
   border-bottom: 1px solid #ccc;
 }
 
-</style>
-<script>
-  function mostrarHoras() {
-  const horas = ["09:00", "10:00", "11:00", "12:00", "13:00"];
-  const contenedor = document.getElementById("horasDisponibles");
-  contenedor.innerHTML = "";
 
-  horas.forEach(hora => {
-    const bloque = document.createElement("div");
-    bloque.textContent = `🕒 ${hora}`;
-    bloque.style.cursor = "pointer";
-    bloque.style.margin = "5px";
-    bloque.style.padding = "5px";
-    bloque.style.border = "1px solid #000";
-
-    bloque.onclick = () => {
-      horaSeleccionada = hora;
-      document.getElementById("horaElegida").textContent = hora;
-      document.getElementById("modal-autos").classList.remove("hidden");
-
-      const botones = document.getElementById("botones-autos");
-      botones.innerHTML = "";
-
-      Object.entries(autos).forEach(([numero, emoji]) => {
-        const btn = document.createElement("button");
-        
-        btn.textContent = `${emoji} Auto ${numero}`;
-        btn.onclick = () => {
-          document.createElement("button").style.background = "gold";
-          document.getElementById("modal-autos").classList.add("hidden");
-          agregarSeleccion(horaSeleccionada, numero);
-        };
-        botones.appendChild(btn);
-      });
-    };
-
-    contenedor.appendChild(bloque);
-  });
-}
-
-
-
-function agregarSeleccion(hora, autoNumero) {
-  const emoji = autos[autoNumero] || "🚗";
-  const contenedor = document.getElementById("selecciones");
-
-  const div = document.createElement("div");
-  div.className = "seleccion-item";
-  div.textContent = `${emoji} Hora: ${hora} - Auto ${autoNumero}`;
-
-  contenedor.appendChild(div);
-}
-
-</script>
-
-<script>
-              function verbotonesdecierre(){
-                document.getElementById("botonescierraxdiv").style.display = 'block';
-            }
-
-              function ocultarbotonesdecierre(){
-                document.getElementById("botonescierraxdiv").style.display = 'none';
-            }
-
-
-// Asegúrate de que este UID es el de tu cuenta de administrador
-const UID_ADMINISTRADOR = "TU_UID_DE_ADMINISTRADOR"; 
-
-// Usa el evento 'onAuthStateChanged' para saber si el usuario está logueado
-firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-        // Si el usuario está logueado, verifica su UID
-        if (user.uid === UID_ADMINISTRADOR) {
-            // Si es el administrador, muestra el botón
-            const botonBorrar = document.getElementById("boton-listo-borrar");
-            if (botonBorrar) {
-                botonBorrar.style.display = "block";
-            }
-        }
-    } else {
-        // Si no hay usuario logueado, el botón se mantiene oculto
-        const botonBorrar = document.getElementById("boton-listo-borrar");
-        if (botonBorrar) {
-            botonBorrar.style.display = "none";
-        }
-    }
-});
-</script>
-<style>
 #boton-listo-borrar {
   /* Estilo básico */
   font-family: Arial, sans-serif;
@@ -1226,39 +687,6 @@ firebase.auth().onAuthStateChanged((user) => {
   transform: translateY(0); /* Vuelve a su posición original */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-</style>
-<div hidden>
-          <h2 style="color: red !important; text-shadow: #000 1px 1px 2px;">⛔Horas Reservadas⛔</h2>
-        <input style="border: 1px solid red;" type="text" id="buscadorGlobal" placeholder="Buscar... por Año, Mes o Día" />
-        <button id="boton-listo-borrar" onclick="miFuncionBorrar();ocultarBotonBorrar()">
- Listo
-</button>
-</div>
-<script>
-    function mostrarBotonBorrar() {
-    // Obtiene el elemento del botón
-    const boton = document.getElementById("boton-listo-borrar");
-    
-    // Muestra el botón
-    boton.style.display = "block"; 
-}
-
-function ocultarBotonBorrar() {
-    // Obtiene el elemento del botón
-    const boton = document.getElementById("boton-listo-borrar");
-    
-    // Oculta el botón
-    boton.style.display = "none";
-}
-     // Aquí defines la función que se ejecutará al hacer clic en el botón
-        function miFuncionBorrar() {
-            alert("¡La función de borrado se ha ejecutado!");
-        ocultarBotonesX();
-         }
-</script>
-
-    </div>
-    <style>
 
 /* Estilos generales del botón */
 #cambiar-hora-btn {
@@ -1321,25 +749,7 @@ function ocultarBotonBorrar() {
     50% { transform: scale(1.05); }
     100% { transform: scale(1); }
 }
-</style>
-    </style>
-<div id="modal-hora-personalizada" class="modal hidden">
-  <div class="modal-content">
-    <!-- otros campos -->
-
-</div>
-
-<style>
-  .hidden {
-  display: none;
-}
-
-
-</style>
-  </div>
-</div>
-<style>
-  /* Contenedor general (opcional para agrupar) */
+ /* Contenedor general (opcional para agrupar) */
 #reserva-formulario {
   background-color: #000;
   padding: 20px;
@@ -1393,35 +803,7 @@ function ocultarBotonBorrar() {
   border-color: yellow;
   outline: none;
 }
-
-</style>
-<div  id="modal-autos" class="hidden">
-<script>
-
-</script>
- <button type="button" onclick="document.getElementById('modal-autos').classList.add('hidden');" style="background: red !important;" >CERRAR</button>   
-  
-  <div id="reserva-formulario">      
-    <button type="button" id="liberarhorasbutton" onclick="document.getElementById('modal-acceso').classList.remove('fantasma');">Habilitar: Liberar horas</button>
- <div id="clave-modalwx" style="display:none; position:fixed; top:30%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border:2px solid #333; z-index:1000;">
-  <label for="clave-inputwx">Ingresa la clave de 4 dígitos:</label><br>
-  <input type="password" id="clave-inputwx" maxlength="4" style="margin-top:10px;"><br>
-
-</div>
-
-  <h3>Selecciona un vehículo para la hora: <span id="horaElegida"></span></h3>
-  <label for="minutos">Escribe el minuto de la Reserva <span>(REQUERIDO)</span></label>
-  <input type="number" id="minutos" value="00">
-  <input type="nombre" id="nombre" placeholder="Esribe el nombre">
-</div>
-
-  <div id="botones-autos"></div>
-  <br><br><br><br><br>
-<script>
-  
-</script>
-
-<style>.dias-semana {
+.dias-semana {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 6px; 
@@ -1646,7 +1028,14 @@ button {
   text-shadow: #000 1px 1px 2px;
        background: linear-gradient(to bottom, yellow, #000, black);
 }
+.reserva-movida {
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  background-color: #ffeaa7;
+}
 
+.mover-abajo{
+    background: linear-gradient(to bottom, rgba(255, 188, 188, 0), #000, #000, yellow);
+}
 .check-green {
   background: green !important; /* rojo claro */
   color: white;
@@ -2333,7 +1722,701 @@ img {
     grid-template-columns: repeat(7, 1fr);
     gap: 6px;
     /* ... (otros estilos) ... */
-}</style>
+}
+
+    .reserva-item {
+  background: linear-gradient(to bottom, darkgray, #000, black);
+
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+
+}
+
+.reserva-item:hover {
+  background-color: #e0f7fa;
+}
+
+  .check-green{
+font-size: 100%;
+  }
+
+  .check-green {
+      background: linear-gradient(to bottom, rgb(253, 23, 23), darkred) !important;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.panel-dia {
+  background-color: #444;
+  margin-bottom: 20px;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.panel-dia h4 {
+  color: yellow;
+  margin-bottom: 10px;
+}
+
+.reserva-item {
+  background-color: #333;
+  margin-bottom: 6px;
+  padding: 8px;
+  border-radius: 6px;
+  color: white;
+}
+</style>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById("modalContenedor");
+    const botonAbrir = document.getElementById("abrirVentana");
+    const botonCerrar = document.getElementsByClassName("cerrar-modal-personalizado")[0];
+
+    // Asegúrate de que los elementos existen antes de añadir los eventos
+    if (botonAbrir) {
+        botonAbrir.onclick = function() {
+            modal.style.display = "block";
+        }
+    }
+
+    if (botonCerrar) {
+        botonCerrar.onclick = function() {
+            modal.style.display = "none";
+        }
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+});
+</script>
+ 
+    <style>
+      
+    </style>
+
+       
+        <h1 style="text-shadow: #000 3px 3px 5px;" hidden>Hora</h1>
+        <div h style="margin-bottom: 10px;"></div>
+
+        <div id="modal-acceso" class="ventana-secreta fantasma">
+            <div class="caja-misteriosa">
+                <h3>ACCESO</h3>
+                  <br><br>
+       
+                  <button onclick="cerrarModal('modal-acceso')">Cerrar</button>
+                <input type="password" id="clave-input" maxlength="4" placeholder="Clave de 4 dígitos">
+               <br><br>
+             
+                     <button style="background-color: green;" onclick="validarClave();ingresarllave();">Ingresar</button>
+              </div>
+        </div>
+<script>
+    // La función que ya tienes para cerrar la modal principal
+function cerrarModal(id) {
+    document.getElementById(id).style.display = 'none';
+}
+
+// Función para cambiar a la vista de cierre de días
+function abrirVistaCierre() {
+    document.getElementById("contenido-principal").hidden = true;
+    document.getElementById("contenido-cierre").hidden = false;
+}
+
+// Función para volver a la vista principal del control
+function mostrarVistaPrincipal() {
+    document.getElementById("contenido-principal").hidden = false;
+    document.getElementById("contenido-cierre").hidden = true;
+}
+
+// Vincula la función `abrirVistaCierre` al clic del botón
+document.addEventListener('DOMContentLoaded', function() {
+    const botonVistaCierre = document.getElementById("abrir-vista-cierre");
+    if (botonVistaCierre) {
+        botonVistaCierre.onclick = abrirVistaCierre;
+    }
+});
+</script>
+        <div id="modal-control" class="ventana-secreta fantasma">
+            <div class="caja-misteriosa">
+                <h3>Control TAXIS</h3>
+   
+         
+              
+<style>
+     /* --- Estilos únicos para el menú desplegable --- */
+
+</style>
+   <button id="ventanaEmergenteCierreDias">Gestionar cierre de días</button>
+<script>
+    function mostrarX(){
+        document.getElementById("contenidoEmergente").hidden = false;
+    }
+        function okultarX(){
+        document.getElementById("contenidoEmergente").hidden = true;
+    }
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const botonesDiaSemana = document.querySelectorAll('.btn-dia-semana');
+
+    botonesDiaSemana.forEach(boton => {
+        boton.addEventListener('click', function() {
+            // El ícono se añade o se quita SOLO del botón actual.
+            this.classList.toggle('seleccionado');
+        });
+    });
+});
+function limpiarReservasMayoresAUnaño() {
+    const fechaLimite = new Date();
+    fechaLimite.setFullYear(fechaLimite.getFullYear() - 1);
+    const fechaLimiteTimestamp = fechaLimite.getTime();
+
+    // Obtener todas las reservas de la base de datos una sola vez
+    reservasRef.once('value')
+        .then(snapshot => {
+            const actualizaciones = {};
+            let hayReservasParaEliminar = false;
+
+            snapshot.forEach(childSnapshot => {
+                const reserva = childSnapshot.val();
+                const fechaReservaTimestamp = new Date(reserva.fecha).getTime();
+
+                // Si la reserva es más antigua que un año, la marcamos para eliminar
+                if (fechaReservaTimestamp < fechaLimiteTimestamp) {
+                    actualizaciones[childSnapshot.key] = null;
+                    hayReservasParaEliminar = true;
+                }
+            });
+
+            if (hayReservasParaEliminar) {
+                // Borrar las reservas antiguas usando una sola operación
+                return reservasRef.update(actualizaciones);
+            } else {
+                console.log("No se encontraron reservas con más de un año de antigüedad.");
+                return Promise.resolve();
+            }
+        })
+        .then(() => {
+            console.log("Reservas con más de un año de antigüedad eliminadas exitosamente.");
+        })
+        .catch(error => {
+            console.error("Error al eliminar las reservas antiguas: ", error);
+        });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Llama a la función de limpieza de reservas al cargar la página
+    limpiarReservasMayoresAUnaño();
+
+    // Aquí iría el resto de tu código que se ejecuta al cargar la página,
+    // como la generación del calendario, etc.
+    generarCuadroCalendario();
+});
+</script>
+      <div style="background-color: grey; border: 2px solid white;" hidden id="contenidoEmergente">
+ <h3>Opciones de cierre por día</h3>
+ <button class="btn-dia-semana" data-dia="1" onclick="cerrarDiaDeLaSemana(1)">
+        Cerrar todos los Lunes <span class="icono">✔</span>
+    </button>
+ <button class="btn-dia-semana" data-dia="1" style="background-color: green;" onclick="habilitarDiaDeLaSemana(1)">
+        Habilitar todos los Lunes <span class="icono">✔</span>
+    </button><br>
+ <button class="btn-dia-semana" data-dia="2" onclick="cerrarDiaDeLaSemana(2)">
+        Cerrar todos los Martes <span class="icono">✔</span>
+    </button>
+ <button class="btn-dia-semana" data-dia="2" style="background-color: green;" onclick="habilitarDiaDeLaSemana(2)">
+        Habilitar todos los Martes <span class="icono">✔</span>
+    </button><br>
+ <button class="btn-dia-semana" data-dia="3" onclick="cerrarDiaDeLaSemana(3)">
+        Cerrar todos los Miércoles <span class="icono">✔</span>
+    </button>
+ <button class="btn-dia-semana" data-dia="3" style="background-color: green;" onclick="habilitarDiaDeLaSemana(3)">
+        Habilitar todos los Miércoles <span class="icono">✔</span>
+    </button><br>
+ <button class="btn-dia-semana" data-dia="4" onclick="cerrarDiaDeLaSemana(4)">
+        Cerrar todos los Jueves <span class="icono">✔</span>
+    </button>
+ <button class="btn-dia-semana" data-dia="4" style="background-color: green;" onclick="habilitarDiaDeLaSemana(4)">
+        Habilitar todos los Jueves <span class="icono">✔</span>
+    </button><br>
+ <button class="btn-dia-semana" data-dia="5" onclick="cerrarDiaDeLaSemana(5)">
+        Cerrar todos los Viernes <span class="icono">✔</span>
+    </button>
+ <button class="btn-dia-semana" data-dia="5" style="background-color: green;" onclick="habilitarDiaDeLaSemana(5)">
+        Habilitar todos los Viernes <span class="icono">✔</span>
+    </button><br>
+ <button class="btn-dia-semana" data-dia="6" onclick="cerrarDiaDeLaSemana(6)">
+        Cerrar todos los Sábados <span class="icono">✔</span>
+    </button>
+ <button class="btn-dia-semana" data-dia="6" style="background-color: green;" onclick="habilitarDiaDeLaSemana(6)">
+        Habilitar todos los Sábados <span class="icono">✔</span>
+    </button><br>
+ <button class="btn-dia-semana" data-dia="0" onclick="cerrarDiaDeLaSemana(0)">
+        Cerrar todos los Domingos <span class="icono">✔</span>
+    </button>
+ <button class="btn-dia-semana" data-dia="0" style="background-color: green;" onclick="habilitarDiaDeLaSemana(0)">
+        Habilitar todos los Domingos <span class="icono">✔</span>
+    </button><br>
+ <br>
+ <button onclick="okultarX();" style="background-color: lightgray; color: red;">Cerrar Opciones de cierre</button>
+</div>
+    <style>
+   
+    </style>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const botonesDiaSemana = document.querySelectorAll('.btn-dia-semana');
+    const botonCerrar = document.getElementById('btn-cerrar-menu'); // Asumo que este es el ID de tu botón cerrar
+
+    botonesDiaSemana.forEach(boton => {
+        boton.addEventListener('click', function() {
+            // Elimina la clase "seleccionado" de todos los botones
+            botonesDiaSemana.forEach(btn => btn.classList.remove('seleccionado'));
+            
+            // Añade la clase "seleccionado" solo al botón clicado
+            this.classList.add('seleccionado');
+
+            // Desliza la pantalla hacia el botón de "Cerrar"
+            if (botonCerrar) {
+                botonCerrar.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }
+        });
+    });
+});
+        // Aislamiento del código del modal para evitar conflictos
+    (function() {
+        const ventanaEmergente = document.getElementById("ventanaEmergenteCierreDias");
+        const btnAbrirVentana = document.getElementById("abrirVentana");
+        const btnCerrarVentana = document.getElementById("btnCerrarVentana");
+
+        function abrirVentanaEmergente() {
+            if (ventanaEmergente) {
+                ventanaEmergente.style.display = "block";
+            }
+        }
+
+        function cerrarVentanaEmergente() {
+            if (ventanaEmergente) {
+                ventanaEmergente.style.display = "none";
+            }
+        }
+
+        if (btnAbrirVentana) {
+            btnAbrirVentana.onclick = abrirVentanaEmergente;
+        }
+        
+        if (btnCerrarVentana) {
+            btnCerrarVentana.onclick = cerrarVentanaEmergente;
+        }
+
+        window.onclick = function(event) {
+            if (event.target === ventanaEmergente) {
+                cerrarVentanaEmergente();
+            }
+        };
+
+        // Asignar el cierre a los botones de cierre de día
+        document.querySelectorAll(".btn-cierre").forEach(btn => {
+            btn.addEventListener("click", cerrarVentanaEmergente);
+        });
+    })();
+    
+    // Al cargar la página, llama a la función para generar el calendario
+    document.addEventListener('DOMContentLoaded', generarCuadroCalendario);
+</script>
+    <div id="cuadroCalendario"></div>
+
+    <script>
+        function generarCuadroCalendario() {
+            const mesStr = `${fechaActualCalendario.getFullYear()}-${String(fechaActualCalendario.getMonth() + 1).padStart(2, "0")}`;
+            const cuadroCalendario = document.getElementById("cuadroCalendario");
+            cuadroCalendario.innerHTML = "";
+            const [anio, mes] = mesStr.split("-");
+            const fechaInicio = new Date(anio, mes - 1, 1);
+            const primerDiaSemana = fechaInicio.getDay();
+            const totalDias = new Date(anio, mes, 0).getDate();
+            const offset = primerDiaSemana === 0 ? 6 : primerDiaSemana - 1;
+
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+
+            for (let i = 0; i < offset; i++) {
+                const vacio = document.createElement("div");
+                cuadroCalendario.appendChild(vacio);
+            }
+
+            for (let dia = 1; dia <= totalDias; dia++) {
+                const fechaActual = `${anio}-${String(mes).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+                const celda = document.createElement("div");
+                celda.classList.add("diaCalendario");
+                celda.textContent = dia;
+
+                const fechaCelda = new Date(anio, mes - 1, dia);
+                const diaSemana = fechaCelda.getDay();
+
+                const horasReservadas = reservasPorDia[fechaActual] || [];
+                
+                const estaBloqueado = diasBloqueados.includes(fechaActual) || horarioDelDia.length === 0 || diasDeLaSemanaBloqueados.includes(diaSemana);
+                const estaOcupado = horasReservadas.length >= horarioDelDia.length;
+                const diaPasado = fechaCelda < hoy;
+
+                if (diaPasado) {
+                  
+                    celda.title = "Este día ya ha pasado";
+                } else if (estaBloqueado) {
+                    celda.classList.add("diaBloqueado");
+                    celda.title = "Día bloqueado por el administrador";
+                } else if (estaOcupado) {
+                    celda.classList.add("diaOcupado");
+                    celda.title = "Día con todas las horas reservadas";
+                } else {
+                    celda.classList.add("diaLibre");
+                    celda.title = "Día disponible";
+                }
+
+                if (diaPasado || (!modoBloqueoDias && estaBloqueado)) {
+                  
+                }
+
+                celda.onclick = () => {
+                   
+
+                    if (modoGestionHorarios) {
+                        fechaSeleccionadaParaConfigurar = fechaActual;
+                        abrirVentanaConfiguracionHorarios();
+                    } else if (modoBloqueoDias) {
+                        // Lógica de bloqueo
+                    } else {
+                        if (!estaBloqueado) {
+                            fechaInput.value = fechaActual;
+                            abrirVentanaHorarios(fechaActual);
+                        }
+                    }
+                };
+                cuadroCalendario.appendChild(celda);
+            }
+        }
+
+ 
+        
+        function cerrarDiaDeLaSemana(dia) {
+            if (!diasDeLaSemanaBloqueados.includes(dia)) {
+                diasDeLaSemanaBloqueados.push(dia);
+            }
+            generarCuadroCalendario();
+        }
+
+        function habilitarDiaDeLaSemana(dia) {
+            const index = diasDeLaSemanaBloqueados.indexOf(dia);
+            if (index > -1) {
+                diasDeLaSemanaBloqueados.splice(index, 1);
+            }
+            generarCuadroCalendario();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            generarCuadroCalendario();
+
+            const botonMostrar = document.getElementById("mostrarBotonesCierre");
+            const botonOcultar = document.getElementById("ocultarBotonesCierre");
+            const contenedorBotones = document.getElementById("botonesCierreContainer");
+
+            function toggleMenu() {
+                contenedorBotones.classList.toggle("menu-visible");
+            }
+
+            if(botonMostrar) botonMostrar.addEventListener('click', toggleMenu);
+            if(botonOcultar) botonOcultar.addEventListener('click', toggleMenu);
+        });
+function liberarhoras() {
+  document.querySelectorAll(".check-green").forEach(boton => {
+    boton.classList.add("visible");
+  });
+}
+  document.getElementById("clave-ingresarwx").addEventListener("click", function () {
+  const clave = document.getElementById("clave-inputwx").value;
+
+  if (clave === "123") {
+    liberarhoras();
+  } else {
+
+  }
+});
+
+
+
+
+    </script>
+ 
+     <br><br>
+    
+  <button onclick="actiwar();cerrarModal('modal-control');"  style="font-size: 74%; border: 0px solid red;" id="activarBloqueoDias">🔒 Marcar Días cerrados</button>
+      
+               <br><br>   <button id="clave-ingresarwx" onclick="liberarhoras();cerrarModal('modal-control');" style="margin-top:10px;">LIBERAR HORAS</button><br><br>
+                <button style="font-size: 150%; background-color: red;" onclick="cerrarModal('modal-control')">Cerrar Panel de Control</button>
+            </div>
+        </div>
+<script>
+    function mostrarModalHorarios() {
+  // 1. Seleccionar el elemento div por su ID
+  const modal = document.getElementById('modal-configuracion-horarios');
+
+  // 2. Verificar si el elemento existe antes de manipularlo
+  if (modal) {
+    // 3. Eliminar la clase "fantasma"
+    modal.classList.remove('fantasma');
+    console.log('Se ha quitado la clase "fantasma" del modal.');
+  } else {
+    console.log('Error: No se encontró el elemento con el ID "modal-configuracion-horarios".');
+  }
+}
+</script>
+        <div id="modal-configuracion-horarios" class="ventana-secreta fantasma">
+            <div class="caja-misteriosa">
+                <h3 id="titulo-config-horarios">Configurar Horario</h3>
+                <p>🟩 Hora Disponible</p><br>
+                <p>🟥 Hora NO Disponible</p>
+                <p id="fecha-config-horarios"></p>
+                <br>
+                <div id="botones-horarios-predeterminados" style="display: flex; flex-direction: column; gap: 5px;">
+                  <button onclick="cerrarModal('modal-configuracion-horarios')">Cerrar</button>
+                                    <button  id="boton-horario-semana" style="background-color: yellow; border: 2px solid black;">Horario de Semana</button>
+                <button onclick="guardarHorarioPersonalizado()"style="background-color: green; border: 2px solid black;">Guardar Horario</button>
+                    <button  id="boton-horario-sabado" style="background-color: yellow; border: 2px solid black;" hidden>Horario de Sábado</button>
+                    <button hidden id="boton-horario-cerrado">Día Cerrado</button>
+                </div>
+                <hr>
+                <div id="botones-toggle-horas" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                </div>
+                <br><br>
+
+                
+            </div>
+        </div>
+
+        <div id="modal-mensaje" class="ventana-secreta fantasma">
+         
+           <div class="caja-misteriosa">
+                <h3>Deja un mensaje mientras tu local está cerrado</h3>
+               <form action="">
+                 <input type="text" id="mensaje-cierre" placeholder="Escribe tu mensaje aquí">
+                <br><br>
+                <button type="button" onclick="guardarMensajeCierre()">Aceptar</button>
+               </form>
+            </div>
+
+        </div>
+
+
+
+        <input type="date" id="fecha" hidden class="" required>
+        
+        <center>
+            <input hidden type="time" id="hora">
+            <div style="margin-bottom: 10px;"></div>
+        </center>
+        
+        <script>
+            function actiwar() {
+                document.getElementById("desactivarBloqueoDias").hidden = false;
+                document.getElementById("cerrartodoslos-button").hidden = false;
+         document.getElementById('modal-autos').style.display = 'none';
+              }
+
+            function desactiwar() {
+                document.getElementById("desactivarBloqueoDias").hidden = true;
+             document.getElementById("cerrartodoslos-button").hidden = true;
+            }
+        </script>
+        <style>
+      
+        </style>
+        <div id="modal-horarios" class="modalBarberia">
+            <div style="background-color: #303030 !important; margin-top: 10px;"  class="contenidoModal">
+                <span id="cerrarVentana" class="cerrarModal">Cerrar</span>
+                <br>
+          <center>
+                  <h3 id="tituloVentana" class="titulo-animado" style="color: yellowred; text-shadow: 1px 1px 1px #000;"></h3>
+          </center>
+                <h3 style="color: #fff      ;">Selecciona la hora</h3>
+                      
+                
+               <div id="horasDisponibles"></div>
+<style>
+ 
+</style>
+<script>
+  function mostrarHoras() {
+  const horas = ["09:00", "10:00", "11:00", "12:00", "13:00"];
+  const contenedor = document.getElementById("horasDisponibles");
+  contenedor.innerHTML = "";
+
+  horas.forEach(hora => {
+    const bloque = document.createElement("div");
+    bloque.textContent = `🕒 ${hora}`;
+    bloque.style.cursor = "pointer";
+    bloque.style.margin = "5px";
+    bloque.style.padding = "5px";
+    bloque.style.border = "1px solid #000";
+
+    bloque.onclick = () => {
+      horaSeleccionada = hora;
+      document.getElementById("horaElegida").textContent = hora;
+      document.getElementById("modal-autos").classList.remove("hidden");
+
+      const botones = document.getElementById("botones-autos");
+      botones.innerHTML = "";
+
+      Object.entries(autos).forEach(([numero, emoji]) => {
+        const btn = document.createElement("button");
+        
+        btn.textContent = `${emoji} Auto ${numero}`;
+        btn.onclick = () => {
+          document.createElement("button").style.background = "gold";
+          document.getElementById("modal-autos").classList.add("hidden");
+          agregarSeleccion(horaSeleccionada, numero);
+        };
+        botones.appendChild(btn);
+      });
+    };
+
+    contenedor.appendChild(bloque);
+  });
+}
+
+
+
+function agregarSeleccion(hora, autoNumero) {
+  const emoji = autos[autoNumero] || "🚗";
+  const contenedor = document.getElementById("selecciones");
+
+  const div = document.createElement("div");
+  div.className = "seleccion-item";
+  div.textContent = `${emoji} Hora: ${hora} - Auto ${autoNumero}`;
+
+  contenedor.appendChild(div);
+}
+
+</script>
+
+<script>
+              function verbotonesdecierre(){
+                document.getElementById("botonescierraxdiv").style.display = 'block';
+            }
+
+              function ocultarbotonesdecierre(){
+                document.getElementById("botonescierraxdiv").style.display = 'none';
+            }
+
+
+// Asegúrate de que este UID es el de tu cuenta de administrador
+const UID_ADMINISTRADOR = "TU_UID_DE_ADMINISTRADOR"; 
+
+// Usa el evento 'onAuthStateChanged' para saber si el usuario está logueado
+firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        // Si el usuario está logueado, verifica su UID
+        if (user.uid === UID_ADMINISTRADOR) {
+            // Si es el administrador, muestra el botón
+            const botonBorrar = document.getElementById("boton-listo-borrar");
+            if (botonBorrar) {
+                botonBorrar.style.display = "block";
+            }
+        }
+    } else {
+        // Si no hay usuario logueado, el botón se mantiene oculto
+        const botonBorrar = document.getElementById("boton-listo-borrar");
+        if (botonBorrar) {
+            botonBorrar.style.display = "none";
+        }
+    }
+});
+</script>
+<style>
+</style>
+<div hidden>
+          <h2 style="color: red !important; text-shadow: #000 1px 1px 2px;">⛔Horas Reservadas⛔</h2>
+        <input style="border: 1px solid red;" type="text" id="buscadorGlobal" placeholder="Buscar... por Año, Mes o Día" />
+        <button id="boton-listo-borrar" onclick="miFuncionBorrar();ocultarBotonBorrar()">
+ Listo
+</button>
+</div>
+<script>
+    function mostrarBotonBorrar() {
+    // Obtiene el elemento del botón
+    const boton = document.getElementById("boton-listo-borrar");
+    
+    // Muestra el botón
+    boton.style.display = "block"; 
+}
+
+function ocultarBotonBorrar() {
+    // Obtiene el elemento del botón
+    const boton = document.getElementById("boton-listo-borrar");
+    
+    // Oculta el botón
+    boton.style.display = "none";
+}
+     // Aquí defines la función que se ejecutará al hacer clic en el botón
+        function miFuncionBorrar() {
+            alert("¡La función de borrado se ha ejecutado!");
+        ocultarBotonesX();
+         }
+</script>
+
+    </div>
+    <style>
+
+</style>
+    </style>
+<div id="modal-hora-personalizada" class="modal hidden">
+  <div class="modal-content">
+    <!-- otros campos -->
+
+</div>
+ 
+  </div>
+</div>
+<style>
+ 
+</style>
+<div  id="modal-autos" class="hidden">
+<script>
+
+</script>
+ <button type="button" onclick="document.getElementById('modal-autos').classList.add('hidden');" style="background: red !important;" >CERRAR</button>   
+  
+  <div id="reserva-formulario">      
+    <button type="button" id="liberarhorasbutton" onclick="document.getElementById('modal-acceso').classList.remove('fantasma');">Habilitar: Liberar horas</button>
+ <div id="clave-modalwx" style="display:none; position:fixed; top:30%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border:2px solid #333; z-index:1000;">
+  <label for="clave-inputwx">Ingresa la clave de 4 dígitos:</label><br>
+  <input type="password" id="clave-inputwx" maxlength="4" style="margin-top:10px;"><br>
+
+</div>
+
+  <h3>Selecciona un vehículo para la hora: <span id="horaElegida"></span></h3>
+  <label for="minutos">Escribe el minuto de la Reserva <span>(REQUERIDO)</span></label>
+  <input type="number" id="minutos" value="00">
+  <input type="nombre" id="nombre" placeholder="Esribe el nombre">
+</div>
+
+  <div id="botones-autos"></div>
+  <br><br><br><br><br>
+<script>
+  
+</script>
+
+
 <script>
 
 </script>
@@ -2582,20 +2665,69 @@ document.querySelectorAll('.dia-calendario').forEach(dia => {
   });
 });
 
+
+
+
+
+
 function mostrarReservasDelDia(fecha) {
   const contenedor = document.getElementById('lista-reservas');
-  contenedor.innerHTML = ''; // Limpiar contenido anterior
+  contenedor.innerHTML = '';
 
+  firebase.database().ref("reservas-lista").once("value").then(snapshot => {
+    const reservasDelDia = [];
+    snapshot.forEach(child => {
+      const reserva = child.val();
+      if (reserva.fecha === fecha) {
+        reservasDelDia.push({ ...reserva, key: child.key });
+      }
+    });
 
+    reservasDelDia.sort((a, b) => a.orden - b.orden);
 
-  reservasDelDia.forEach(reserva => {
-    const div = document.createElement('div');
-    div.className = 'reserva';
-    div.textContent = `${reserva.hora} - ${reserva.nombre}`;
-    contenedor.appendChild(div);
+    contenedor.innerHTML = '';
+    reservasDelDia.forEach(reserva => {
+      const div = document.createElement('div');
+      div.className = 'reserva';
+      div.textContent = `${reserva.hora}:${reserva.minutos} - ${reserva.nombre} ${reserva.emoji}`;
+      div.setAttribute("data-id", reserva.key);
+      contenedor.appendChild(div);
+    });
+
+    activarDragDrop(contenedor);
   });
-  mostrarTodasLasReservasOrdenadas();
 }
+
+
+
+let sortableInstancia;
+
+function activarDragDrop(contenedor) {
+  if (sortableInstancia) {
+    sortableInstancia.destroy();
+  }
+
+  sortableInstancia = Sortable.create(contenedor, {
+    animation: 150,
+    onEnd: function () {
+      const idsOrdenados = Array.from(contenedor.children).map(el => el.getAttribute("data-id"));
+      idsOrdenados.forEach((id, index) => {
+        if (id) {
+          firebase.database().ref("reservas-lista/" + id).update({ orden: index });
+        } 
+      });
+    }
+  });
+}
+
+
+
+
+
+
+
+
+
 
 function mostrarTodasLasReservasOrdenadas() {
   const contenedor = document.getElementById('lista-reservas');
@@ -2636,6 +2768,67 @@ function cargarReservasAgrupadas() {
   });
 }
 
+
+
+
+document.addEventListener("click", function (e) {
+  if (e.target.classList.contains("mover-arriba") || e.target.classList.contains("mover-abajo")) {
+    const item = e.target.closest(".reserva-item");
+    const panel = item.parentElement;
+    const fecha = panel.querySelector("h4").textContent;
+    const items = Array.from(panel.querySelectorAll(".reserva-item"));
+    const index = items.indexOf(item);
+
+    // Agregar clase de animación para el efecto visual
+    item.classList.add("moviendo");
+    
+    // Aplicar animación a los elementos adyacentes para un efecto más fluido
+    if (index > 0) items[index - 1].classList.add("animacion-reorden");
+    if (index < items.length - 1) items[index + 1].classList.add("animacion-reorden");
+
+    // Calcular la posición objetivo antes del movimiento
+    let targetElement = null;
+    if (e.target.classList.contains("mover-arriba") && index > 0) {
+      targetElement = items[index - 1];
+    }
+    if (e.target.classList.contains("mover-abajo") && index < items.length - 1) {
+      targetElement = items[index + 1];
+    }
+
+    if (targetElement) {
+      // Mover el elemento con animación visible
+      setTimeout(() => {
+        if (e.target.classList.contains("mover-arriba")) {
+          panel.insertBefore(item, targetElement);
+        } else {
+          panel.insertBefore(targetElement, item);
+        }
+
+        // Recalcular orden y actualizar en Firebase usando ID
+        const nuevasReservas = Array.from(panel.querySelectorAll(".reserva-item")).map((el, i) => {
+          return {
+            id: el.dataset.id,
+            orden: i
+          };
+        });
+
+        nuevasReservas.forEach((reserva) => {
+          firebase.database().ref(`reservas-lista/${reserva.id}`).update({ orden: reserva.orden });
+        });
+      }, 300); // Pequeño retraso para que se vea la animación
+    }
+
+    // Remover clases de animación después de 1 segundo
+    setTimeout(() => {
+      item.classList.remove("moviendo");
+      items.forEach(el => el.classList.remove("animacion-reorden"));
+    }, 1000);
+  }
+});
+
+
+
+
 function mostrarReservasAgrupadas(reservasPorFecha) {
   const lista = document.getElementById("reservas-lista");
   lista.innerHTML = ""; // limpiar
@@ -2649,17 +2842,15 @@ function mostrarReservasAgrupadas(reservasPorFecha) {
     panel.className = "panel-dia";
     panel.innerHTML = `<h4>${fecha}</h4>`;
 
-    // Ordenar reservas por hora:minutos
-    reservasPorFecha[fecha].sort((a, b) => {
-      const horaA = new Date(`${a.fecha}T${a.hora.padStart(2, '0')}:${a.minutos.padStart(2, '0')}`);
-      const horaB = new Date(`${b.fecha}T${b.hora.padStart(2, '0')}:${b.minutos.padStart(2, '0')}`);
-      return horaA - horaB;
-    });
+  reservasPorFecha[fecha].sort((a, b) => a.orden - b.orden);
+
 
     // Agregar cada reserva al panel
     reservasPorFecha[fecha].forEach((reserva) => {
       const item = document.createElement("div");
-      item.className = "reserva-item";
+     item.className = "reserva-item";
+item.dataset.id = reserva.id; // ← clave única de Firebase
+
 
       const emojiCompleto = autos[reserva.auto] || "";
       const emojiColor = emojiCompleto.slice(-2);
@@ -2667,11 +2858,14 @@ function mostrarReservasAgrupadas(reservasPorFecha) {
 
       item.style.borderLeft = `6px solid ${color}`;
       item.style.paddingLeft = "10px";
+item.dataset.id = reserva.id;
 
       item.innerHTML = `
         <span class="nombre">${reserva.nombre}</span> -
         <span class="hora">${reserva.hora}:${reserva.minutos}</span> -
         <span class="auto" style="color:${color}; font-weight:bold;">Auto ${reserva.auto}</span>
+          <button class="mover-arriba">⇧</button>
+  <button class="mover-abajo">⇩</button>
       `;
 
       panel.appendChild(item);
@@ -3179,7 +3373,7 @@ function liberarReserva(fecha, hora, auto) {
   });
 
   // 2. Eliminar de reservas-lista
-  database.ref("reservas-lista").once("value", snapshot => {
+  database.ref("reservas-lista").on("value", snapshot => {
     snapshot.forEach(child => {
       const reserva = child.val();
       if (
@@ -3189,6 +3383,7 @@ function liberarReserva(fecha, hora, auto) {
         reserva.minutos == minutos
       ) {
         database.ref("reservas-lista").child(child.key).remove();
+        
       }
     });
   });
@@ -3201,14 +3396,22 @@ function liberarReserva(fecha, hora, auto) {
 
 
 function cargarReservas() {
-  const lista = document.getElementById("reservas-lista");
-  lista.innerHTML = "";
-
-  firebase.database().ref("reservas-lista").once("value", snapshot => {
+  firebase.database().ref("reservas-lista").once("value").then(snapshot => {
+    const reservasPorFecha = {};
+    
+    // Agrupar reservas por fecha
     snapshot.forEach(child => {
       const reserva = child.val();
-      mostrarReservaEnLista(reserva);
+      reserva.id = child.key; // Guardar el ID de Firebase
+      
+      if (!reservasPorFecha[reserva.fecha]) {
+        reservasPorFecha[reserva.fecha] = [];
+      }
+      reservasPorFecha[reserva.fecha].push(reserva);
     });
+    
+    // Usar la función existente para mostrar las reservas agrupadas y ordenadas
+    mostrarReservasAgrupadas(reservasPorFecha);
   });
 }
 
@@ -3216,15 +3419,8 @@ window.onload = cargarReservas;
 
 
 window.onload = () => {
-
-  cargarReservasAgrupadas();
-  cargarReservasOrdenadas();
-  cargarReservas(); // si ya tienes esto, déjalo
-
-generarPanelesPorFecha();
-generarPanelesPorFecha();
-actualizarListaReservas();
-
+  // Cargar reservas agrupadas por fecha y ordenadas
+  cargarReservas();
 
   document.getElementById("admin-btn").onclick = () => {
     const clave = prompt("Introduce la clave de administrador (4 dígitos):");
@@ -3441,6 +3637,7 @@ function mostrarReservaEnLista(reserva) {
     <span class="hora">${reserva.hora}:${reserva.minutos}</span> -
     <span class="auto" style="color:${color}; font-weight:bold;">Auto ${reserva.auto}</span>
   `;
+item.dataset.id = reserva.id;
 
   item.className = "reserva-item";
   item.style.borderLeft = `6px solid ${color}`;
@@ -3450,6 +3647,19 @@ function mostrarReservaEnLista(reserva) {
 }
 
 
+function agruparReservasPorFecha(data) {
+  const agrupadas = {};
+
+  for (const fecha in data) {
+    for (const id in data[fecha]) {
+      const reserva = data[fecha][id];
+      if (!agrupadas[fecha]) agrupadas[fecha] = [];
+      agrupadas[fecha].push({ ...reserva, id }); // ← guarda el ID
+    }
+  }
+
+  return agrupadas;
+}
 
 
 
@@ -3462,7 +3672,8 @@ const nombre = document.getElementById("nombre").value;
     auto: auto,
     emoji: emoji,
     minutos: minutos,
-    nombre: nombre
+    nombre: nombre,
+    orden: Date.now() * 1000 + Math.floor(Math.random() * 1000) // Mayor precisión y aleatoriedad
   };
 
   // Guarda en la lista general y captura el ID
@@ -3475,7 +3686,8 @@ const nombre = document.getElementById("nombre").value;
     auto: auto,
     emoji: emoji,
     minutos: minutos,
-    nombre: nombre
+    nombre: nombre,
+    orden: Date.now() * 1000 + Math.floor(Math.random() * 1000) // Mayor precisión y aleatoriedad
   });
 
   mostrarReservaEnLista(nuevaReserva);
@@ -3709,22 +3921,6 @@ const minutos = document.getElementById("minutos").value;
     </script>
     <style>/* Dentro de la etiqueta <style> */
 
-    .reserva-item {
-  background: linear-gradient(to bottom, darkgray, #000, black);
-
-  padding: 10px;
-  margin-bottom: 8px;
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  font-weight: 500;
-  transition: background-color 0.3s ease;
-
-}
-
-.reserva-item:hover {
-  background-color: #e0f7fa;
-}
-
 
 
 </style>
@@ -3771,38 +3967,7 @@ const minutos = document.getElementById("minutos").value;
 
 </script>
 <style>
-  .check-green{
-font-size: 100%;
-  }
-
-  .check-green {
-      background: linear-gradient(to bottom, rgb(253, 23, 23), darkred) !important;
-  color: white;
-  border: none;
-  padding: 8px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.panel-dia {
-  background-color: #444;
-  margin-bottom: 20px;
-  padding: 10px;
-  border-radius: 8px;
-}
-
-.panel-dia h4 {
-  color: yellow;
-  margin-bottom: 10px;
-}
-
-.reserva-item {
-  background-color: #333;
-  margin-bottom: 6px;
-  padding: 8px;
-  border-radius: 6px;
-  color: white;
-}
+  
 
 </style>
 
