@@ -93,3 +93,9 @@
   box-shadow: 0 0 12px 4px white;
   display: inline-block;
 }
+
+#liberarhorasbutton{
+  border: solid 2px red;
+  background: darkgrey;
+  color: red;
+}
