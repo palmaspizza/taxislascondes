@@ -3487,8 +3487,24 @@ function cargarReservas() {
       reservasPorFecha[reserva.fecha].push(reserva);
     });
     
-    // Usar la función existente para mostrar las reservas agrupadas y ordenadas
-    mostrarReservasAgrupadas(reservasPorFecha);
+    // Filtrar días bloqueados/cerrados para que no aparezcan en la lista global
+    const reservasFiltradasPorFecha = {};
+    Object.keys(reservasPorFecha).forEach((fecha) => {
+      // Determinar si el día está bloqueado según las mismas reglas del calendario
+      const horarioDelDia = obtenerHorarioDelDiaDesdeFecha(fecha);
+      const fechaObj = new Date(fecha);
+      const diaSemana = fechaObj.getDay();
+      const estaBloqueado = diasBloqueados.includes(fecha) ||
+                            (Array.isArray(horarioDelDia) && horarioDelDia.length === 0) ||
+                            (Array.isArray(diasDeLaSemanaBloqueados) && diasDeLaSemanaBloqueados.includes(diaSemana));
+
+      if (!estaBloqueado) {
+        reservasFiltradasPorFecha[fecha] = reservasPorFecha[fecha];
+      }
+    });
+
+    // Mostrar sólo los días permitidos
+    mostrarReservasAgrupadas(reservasFiltradasPorFecha);
   });
 }
 
