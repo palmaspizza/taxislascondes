@@ -1,3 +1,6 @@
+ 
+
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -2155,10 +2158,41 @@ function liberarhoras() {
   <button onclick="actiwar();cerrarModal('modal-control');"  style="font-size: 74%; border: 0px solid red;" id="activarBloqueoDias">🔒 Marcar Días cerrados</button>
       
                <br><br>   <button id="clave-ingresarwx" onclick="liberarhoras();cerrarModal('modal-control');" style="margin-top:10px;">LIBERAR HORAS</button><br><br>
-                <button style="font-size: 150%; background-color: red;" onclick="cerrarModal('modal-control')">Cerrar Panel de Control</button>
+               <button style="font-size: 150%; background-color: red;" onclick="cerrarModal('modal-control')">Cerrar Panel de Control</button>
+                <br><br>
+                <button id="btn-administrar" class="btn-admin" style="font-weight:bold; background:#ffd54f; border:1px solid #b8860b;" onclick="actualizarEstadoAdminUI();">Activar modo Administrar</button>
             </div>
         </div>
 <script>
+    // Modo Administrar (solo por sesión del usuario)
+    let modoAdminUsuario = sessionStorage.getItem('modoAdminUsuario') === 'true';
+
+
+
+function actualizarEstadoAdminUI() {
+  const btn = document.getElementById('btn-administrar');
+  if (!btn) return;
+
+  btn.textContent = 'Activar modo Administrar';
+  btn.style.background = '#ffd54f';
+  btn.style.color = 'black';
+  btn.onclick = () => {
+    location.reload();
+  };
+}
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const btn = document.getElementById('btn-administrar');
+      if (btn) {
+        actualizarEstadoAdminUI();
+        btn.onclick = function () {
+          modoAdminUsuario = !modoAdminUsuario;
+          sessionStorage.setItem('modoAdminUsuario', modoAdminUsuario ? 'true' : 'false');
+          actualizarEstadoAdminUI();
+    
+        };
+      }
+    });
     function mostrarModalHorarios() {
   // 1. Seleccionar el elemento div por su ID
   const modal = document.getElementById('modal-configuracion-horarios');
@@ -2240,12 +2274,37 @@ function liberarhoras() {
           <center>
                   <h3 id="tituloVentana" class="titulo-animado" style="color: yellowred; text-shadow: 1px 1px 1px #000;"></h3>
           </center>
+                <!-- Panel de reservas del día (se rellena dinámicamente al abrir horarios) -->
+                <div id="reservasDelDiaPanel" class="panel-dia-reservas"></div>
                 <h3 style="color: #fff      ;">Selecciona la hora</h3>
                       
                 
                <div id="horasDisponibles"></div>
 <style>
- 
+ .panel-dia-reservas {
+   background: #2c2c2c;
+   border: 1px solid #444;
+   border-radius: 6px;
+   padding: 10px;
+   margin: 8px 0 12px 0;
+   color: #fff;
+ }
+ .panel-dia-reservas h4 {
+   margin: 0 0 6px 0;
+   font-size: 14px;
+   color: #ddd;
+ }
+ .reservas-dia-lista {
+   list-style: none;
+   padding: 0;
+   margin: 0;
+ }
+ .reserva-dia-item {
+   margin: 4px 0;
+   padding: 4px 6px;
+   background: #1f1f1f;
+   border-radius: 4px;
+ }
 </style>
 <script>
   function mostrarHoras() {
@@ -2272,7 +2331,7 @@ function liberarhoras() {
       Object.entries(autos).forEach(([numero, emoji]) => {
         const btn = document.createElement("button");
         
-        btn.textContent = `${emoji} Auto ${numero}`;
+        btn.textContent = `${emoji} Móvil ${numero}`;
         btn.onclick = () => {
           document.createElement("button").style.background = "gold";
           document.getElementById("modal-autos").classList.add("hidden");
@@ -2294,7 +2353,7 @@ function agregarSeleccion(hora, autoNumero) {
 
   const div = document.createElement("div");
   div.className = "seleccion-item";
-  div.textContent = `${emoji} Hora: ${hora} - Auto ${autoNumero}`;
+  div.textContent = `${emoji} Hora: ${hora} - Móvil ${autoNumero}`;
 
   contenedor.appendChild(div);
 }
@@ -2389,13 +2448,27 @@ function ocultarBotonBorrar() {
  <button type="button" onclick="document.getElementById('modal-autos').classList.add('hidden');" style="background: red !important;" >CERRAR</button>   
   
   <div id="reserva-formulario">      
-    <button type="button" id="liberarhorasbutton" onclick="document.getElementById('modal-acceso').classList.remove('fantasma');">Habilitar: Liberar horas</button>
+    <button type="button" id="liberarhorasbutton" onclick="document.getElementById('modal-acceso').classList.remove('fantasma');">Administrar</button>
  <div id="clave-modalwx" style="display:none; position:fixed; top:30%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border:2px solid #333; z-index:1000;">
   <label for="clave-inputwx">Ingresa la clave de 4 dígitos:</label><br>
   <input type="password" id="clave-inputwx" maxlength="4" style="margin-top:10px;"><br>
 
 </div>
+<script>
+  function showAdminWarning() {
+  document.getElementById("admin-warning").classList.remove("hidden");
+}
 
+function closeAdminWarning() {
+  document.getElementById("admin-warning").classList.add("hidden");
+}
+</script>
+<div id="admin-warning" class="modal hidden">
+  <div class="modal-content">
+    <p>Activa el modo <strong>'Administrar'</strong> en el Panel de Control para reservar.</p>
+    <button onclick="closeAdminWarning()">Cerrar</button>
+  </div>
+</div>
   <h3>Selecciona un vehículo para la hora: <span id="horaElegida"></span></h3>
   <label for="minutos">Escribe el minuto de la Reserva <span>(REQUERIDO)</span></label>
   <input type="number" id="minutos" value="00">
@@ -2509,7 +2582,7 @@ function selectVehicle(vehicleId, time) {
     // 2. Añadir el objeto al array de reservas para esa hora
     allReservations[time].push(reservationData);
 
-    modalMessage.textContent = `Auto ${vehicleId} ${vehicleEmoji} reservado y bloqueado para ${time}.`;
+    modalMessage.textContent = `Móvil ${vehicleId} ${vehicleEmoji} reservado y bloqueado para ${time}.`;
     
     // ... (resto de la lógica, como openVehicleModal(time) )
     updateReservationDisplay(); 
@@ -2544,7 +2617,7 @@ function generarPanelesPorFecha() {
 
 
 
-function abrirSelectorDeAutos(hora) {
+function abrirSelectorDeMóvils(hora) {
   const modal = document.getElementById("modal-autos");
   const contenedor = document.getElementById("botones-autos");
   const horaElegida = document.getElementById("horaElegida");
@@ -2555,7 +2628,7 @@ function abrirSelectorDeAutos(hora) {
 
   Object.entries(autos).forEach(([numero, emoji]) => {
     const btn = document.createElement("button");
-    btn.textContent = `${emoji} Auto ${numero}`;
+    btn.textContent = `${emoji} Móvil ${numero}`;
     btn.onclick = () => {
       modal.classList.add("hidden");
       alert(`Elegiste el auto ${numero} para la hora ${hora}`);
@@ -2858,7 +2931,7 @@ item.dataset.id = reserva.id;
       item.innerHTML = `
         <span class="nombre">${reserva.nombre}</span> -
         <span   class="hora hora-reserva">${reserva.hora}:${reserva.minutos}</span> -
-        <span class="auto" style="color:${color}; font-weight:bold;">Auto ${reserva.auto}</span>
+        <span class="auto" style="color:${color}; font-weight:bold;">Móvil ${reserva.auto}</span>
           <button class="mover-arriba">⇧</button>
   <button class="mover-abajo">⇩</button>
       `;
@@ -3217,14 +3290,14 @@ setTimeout(() => {
 
 
      const autos = {
-  "24": "  🚖 🟥",   // Auto rojo
+  "24": "  🚖 🟥",   // Móvil rojo
   "69": "  🚖 🟪",   // SUV violeta
   "811": "🚐 🟨",  // Taxi amarillo
   "61": "  🚐 🟩",   // Patrulla verde
   "29": "  🚖 ⬜",   // Camión blanco
-  "41": "  🚖 🟧",  // Auto de carrera naranja
+  "41": "  🚖 🟧",  // Móvil de carrera naranja
   "39": "  🚖 🟫",   // Van marrón
-  "26": "🚖 ⬛",   // Auto oscuro
+  "26": "🚖 ⬛",   // Móvil oscuro
   "22": "  🚖 🔵",   // Bus azul
   "07": "🚐 🟤",   // Camión café
   "71": "  🚐 🔘",   // Tractor azul intenso
@@ -3255,7 +3328,7 @@ function obtenerColorDesdeEmoji(emojiColor) {
 
   
 
-function mostrarBotonesAutos(hora) {
+function mostrarBotonesMóvils(hora) {
   const contenedor = document.getElementById("botones-autos");
   const horaElegida = document.getElementById("horaElegida");
   const fecha = fechaInput.value;
@@ -3284,7 +3357,7 @@ function mostrarBotonesAutos(hora) {
 
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.textContent = `${emoji} Auto ${numero}`;
+      btn.textContent = `${emoji} Móvil ${numero}`;
       btn.style.padding = "8px";
 
       const estaReservado = autosReservados.includes(numero);
@@ -3297,8 +3370,9 @@ function mostrarBotonesAutos(hora) {
         btn.textContent += " (Reservado)";
         grupo.appendChild(btn);
 
-        //  Botón para liberar el auto
-        const liberarBtn = document.createElement("button");
+        //  Botón para liberar el auto (solo en modo Administrar)
+        if (modoAdminUsuario) {
+          const liberarBtn = document.createElement("button");
 liberarBtn.textContent = "❎⏰";
 liberarBtn.className = "check-green";
 liberarBtn.onclick = () => {
@@ -3306,25 +3380,33 @@ liberarBtn.onclick = () => {
     if (confirmar) {
       liberarReserva(fecha, hora, numero);
       eliminarReservaDeLista(numero, fecha, hora); // ← nueva función
-      mostrarBotonesAutos(hora); // refresca la vista
+      mostrarBotonesMóvils(hora); // refresca la vista
     }
   });
 };
 
 grupo.appendChild(liberarBtn);
+        }
 
       } else {
-        btn.onclick = () => {
-          const confirmar = showConfirm("¿Estás seguro que quieres reservar este vehículo?", (confirmar) => {
+        // Deshabilitar por defecto si no está activo modo Administrar
+        if (!modoAdminUsuario) {
+          btn.disabled = true;
+          btn.style.opacity = "0.5";
+          btn.style.backgroundColor = "#ddd";
+          btn.style.cursor = "not-allowed";
+        } else {
+          btn.onclick = () => {
+            const confirmar = showConfirm("¿Estás seguro que quieres reservar este vehículo?", (confirmar) => {
   if (confirmar) {
-    console.log("Reserva confirmada");
     guardarReserva(fecha, hora, numero, emoji);
-    mostrarBotonesAutos(hora);
+    mostrarBotonesMóvils(hora);
     document.getElementById("modal-autos").classList.add("hidden");
   }
 });
 
-        };
+          };
+        }
         grupo.appendChild(btn);
       }
 
@@ -3346,7 +3428,7 @@ function eliminarReservaDeLista(auto, fecha, hora) {
         const lista = document.getElementById("reservas-lista");
         const items = lista.querySelectorAll("li");
         items.forEach((item) => {
-          if (item.textContent.includes(`Auto ${auto}`) && item.textContent.includes(`${hora}:${reserva.minutos} - ${reserva.nombre} `)) {
+          if (item.textContent.includes(`Móvil ${auto}`) && item.textContent.includes(`${hora}:${reserva.minutos} - ${reserva.nombre} `)) {
             item.remove();
           }
         });
@@ -3420,13 +3502,7 @@ window.onload = () => {
   document.getElementById("admin-btn").onclick = () => {
     const clave = prompt("Introduce la clave de administrador (4 dígitos):");
 
-    if (clave === "2436") {
-      modoAdmin = true;
-      alert("Modo administrador activado. Puedes liberar autos reservados.");
-    } else {
-      alert("Clave incorrecta.");
-    }
-  };
+  }
 };
 
 
@@ -3460,6 +3536,11 @@ function actualizarListaReservas() {
 
 
         function reservarHora() {
+            // Solo permitir reservas si el modo Administrar está activo para este usuario
+            if (!modoAdminUsuario) {
+                alert("Reservas deshabilitadas. Activa 'Administrar' en el Panel de Control.");
+                return;
+            }
             const fecha = fechaInput.value;
             const hora = document.getElementById("hora").value;
             const minuto = document.getElementById("minuto").value;
@@ -3544,45 +3625,11 @@ function actualizarListaReservas() {
             elemento.addEventListener("touchend", () => clearTimeout(presionarTimer));
         }
 
-        const reservasRefMostrar = firebase.database().ref("reservas");
-        reservasRefMostrar.on("child_added", (snapshot) => {
-            const {
-                fecha,
-                hora,
-                nombre
-            } = snapshot.val();
-            const idBloque = `${fecha}-${hora}`;
-            if (document.getElementById(idBloque)) return;
-            const div = document.createElement("div");
-            div.className = "reserva-item";
-            div.id = idBloque;
-            const texto = document.createElement("span");
-            texto.textContent = `📅 ${fecha} ⏰ ${hora} - ${nombre}`;
-            const botonX = document.createElement("span");
-            botonX.textContent = " | ❌";
-            botonX.className = "boton-x";
-            botonX.title = "Eliminar esta hora";
-            botonX.onclick = () => {
-    // Obtén la clave (ID único) de la reserva
-    const reservaId = snapshot.key;
-
-    // Crea la referencia para eliminar solo esta reserva específica
-    const reservaRef = reservasRefMostrar.child(reservaId);
-
-    // Usa la referencia para eliminar
-    reservaRef.remove()
-        .then(() => {
-            console.log("Reserva eliminada con éxito.");
-        })
-        .catch((error) => {
-            console.error("Error al eliminar la reserva:", error);
-        });
-
-};
-            div.appendChild(texto);
-            div.appendChild(botonX);
-            listaReservas.appendChild(div);
-        });
+        const reservasRefMostrar = firebase.database().ref("reservas-lista");
+        // Refrescar la lista agrupada y ordenada ante cambios en tiempo real
+        reservasRefMostrar.on("child_added", () => { cargarReservas(); });
+        reservasRefMostrar.on("child_changed", () => { cargarReservas(); });
+        reservasRefMostrar.on("child_removed", () => { cargarReservas(); });
 
 
 function generarPanelesPorFecha() {
@@ -3630,7 +3677,7 @@ function mostrarReservaEnLista(reserva) {
   item.innerHTML = `
     <span class="nombre">${reserva.nombre}</span> -
     <span class="hora">${reserva.hora}:${reserva.minutos}</span> -
-    <span class="auto" style="color:${color}; font-weight:bold;">Auto ${reserva.auto}</span>
+    <span class="auto" style="color:${color}; font-weight:bold;">Móvil ${reserva.auto}</span>
   `;
 item.dataset.id = reserva.id;
 
@@ -3659,6 +3706,11 @@ function agruparReservasPorFecha(data) {
 
 
 function guardarReserva(fecha, hora, auto, emoji,) {
+  // Solo permitir reservas si el modo Administrar está activo para este usuario
+  if (!modoAdminUsuario) {
+    alert("Reservas deshabilitadas. Activa 'Administrar' en el Panel de Control.");
+    return;
+  }
   const minutos = document.getElementById("minutos").value;
 const nombre = document.getElementById("nombre").value;
   const nuevaReserva = {
@@ -3769,7 +3821,9 @@ const nombre = document.getElementById("nombre").value;
         }
 
   function abrirVentanaHorarios(fecha) {
-  tituloVentana.textContent = `HORAS DISPONIBLES ㅤ ${fecha}`;
+  tituloVentana.textContent = `${fecha}`;
+  // Renderizar reservas del día en el panel sobre las horas
+  renderReservasDelDiaEnPanel(fecha);
   horasDisponibles.innerHTML = "";
   const horasReservadas = reservasPorDia[fecha] || [];
   const diaSemana = new Date(fecha).getDay(); // 0 = Domingo
@@ -3787,6 +3841,8 @@ const nombre = document.getElementById("nombre").value;
       bloque.classList.add("horaLibre");
       bloque.textContent = ` ${hora}`;
       bloque.onclick = () => {
+  // Verificación de modo Administrar: solo quien lo activó puede reservar
+
   document.getElementById("hora").value = hora;
   fechaInput.value = fecha;
 
@@ -3794,7 +3850,7 @@ const nombre = document.getElementById("nombre").value;
 
   //  Mostrar directamente el modal de autos
   document.getElementById("modal-autos").classList.remove("hidden");
-  mostrarBotonesAutos(hora);
+  mostrarBotonesMóvils(hora);
 };
 
 
@@ -3816,6 +3872,67 @@ cerrarVentana.onclick = () => {
 window.onclick = (e) => {
     if (e.target === ventanaHorarios) ventanaHorarios.style.display = "none";
 };
+
+// Panel de reservas del día: muestra las reservas del día seleccionado arriba de las horas
+function renderReservasDelDiaEnPanel(fecha) {
+  const panel = document.getElementById("reservasDelDiaPanel");
+  if (!panel) return;
+  panel.innerHTML = "";
+
+  const titulo = document.createElement("h4");
+  titulo.textContent = `Reservas del ${fecha}`;
+  panel.appendChild(titulo);
+
+  const ul = document.createElement("ul");
+  ul.className = "reservas-dia-lista";
+
+  firebase.database().ref("reservas-lista")
+    .orderByChild("fecha")
+    .equalTo(fecha)
+    .once("value")
+    .then((snapshot) => {
+      const reservasDia = [];
+      snapshot.forEach((child) => {
+        const r = child.val();
+        reservasDia.push({ ...r, id: child.key });
+      });
+
+      reservasDia.sort((a, b) => {
+        const [hA, mA] = String(a.hora).split(":").map(Number);
+        const [hB, mB] = String(b.hora).split(":").map(Number);
+        const totalA = hA * 60 + (isNaN(mA) ? Number(a.minutos) || 0 : mA);
+        const totalB = hB * 60 + (isNaN(mB) ? Number(b.minutos) || 0 : mB);
+        return totalA - totalB;
+      });
+
+      if (reservasDia.length === 0) {
+        const vacio = document.createElement("div");
+        vacio.className = "panel-vacio";
+        vacio.textContent = "Sin reservas para este día.";
+        panel.appendChild(vacio);
+        return;
+      }
+
+      reservasDia.forEach((reserva) => {
+        const emojiCompleto = autos[reserva.auto] || "";
+        const emojiColor = emojiCompleto.slice(-2);
+        const color = obtenerColorDesdeEmoji(emojiColor);
+
+        const li = document.createElement("li");
+        li.className = "reserva-dia-item";
+        li.style.borderLeft = `6px solid ${color}`;
+        li.style.paddingLeft = "10px";
+        li.innerHTML = `
+          <span class="hora">${reserva.hora}:${reserva.minutos}</span> -
+          <span class="nombre">${reserva.nombre}</span> -
+          <span class="auto" style="color:${color}; font-weight:bold;">Móvil ${reserva.auto}</span>
+        `;
+        ul.appendChild(li);
+      });
+
+      panel.appendChild(ul);
+    });
+}
 
         function enviarMensajeWhatsApp() {
             const nombre = document.getElementById("nombre")?.value.trim();
