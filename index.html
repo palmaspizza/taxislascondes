@@ -3867,21 +3867,21 @@ const nombre = document.getElementById("nombre").value;
 
     if (horasReservadasNorm.includes(hh)) {
       bloque.classList.add("horaOcupada");
-      bloque.textContent = `⛔ ${hh}:00`;
+      bloque.textContent = `⛔ ${hora}`;
     } else {
       bloque.classList.add("horaLibre");
-      bloque.textContent = ` ${hh}:00`;
+      bloque.textContent = ` ${hora}`;
       bloque.onclick = () => {
   // Verificación de modo Administrar: solo quien lo activó puede reservar
 
-  document.getElementById("hora").value = hh;
+  document.getElementById("hora").value = hora;
   fechaInput.value = fecha;
 
   ventanaHorarios.style.display = "none";
 
   //  Mostrar directamente el modal de autos
   document.getElementById("modal-autos").classList.remove("hidden");
-  mostrarBotonesAutos(hh);
+  mostrarBotonesMóvils(hora);
 };
 
 
