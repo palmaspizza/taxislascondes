@@ -2910,7 +2910,14 @@ function mostrarReservasAgrupadas(reservasPorFecha) {
     panel.className = "panel-dia";
     panel.innerHTML = `<h4>${fecha}</h4>`;
 
-  reservasPorFecha[fecha].sort((a, b) => a.orden - b.orden);
+  // Ordenar por hora:minutos ascendente (00 → 23) usando normalización
+  reservasPorFecha[fecha].sort((a, b) => {
+    const hA = Number(normalizarHoraTexto(a.hora)) || 0;
+    const hB = Number(normalizarHoraTexto(b.hora)) || 0;
+    const mA = Number(a.minutos) || 0;
+    const mB = Number(b.minutos) || 0;
+    return (hA * 60 + mA) - (hB * 60 + mB);
+  });
 
 
     // Agregar cada reserva al panel
@@ -3323,6 +3330,12 @@ function obtenerColorDesdeEmoji(emojiColor) {
     "🟠": "#ff9800"  // naranja claro
   };
   return mapaColores[emojiColor] || "#777"; // color por defecto
+}
+
+// Normaliza cualquier texto de hora para obtener "HH" sin emojis ni adornos
+function normalizarHoraTexto(h) {
+  const match = String(h).match(/\b(\d{2})\b/);
+  return match ? match[1] : String(h);
 }
 
 
@@ -3842,31 +3855,33 @@ const nombre = document.getElementById("nombre").value;
   renderReservasDelDiaEnPanel(fecha);
   horasDisponibles.innerHTML = "";
   const horasReservadas = reservasPorDia[fecha] || [];
+  const horasReservadasNorm = horasReservadas.map(normalizarHoraTexto);
   const diaSemana = new Date(fecha).getDay(); // 0 = Domingo
 
   const horarioDelDia = obtenerHorarioDelDiaDesdeFecha(fecha);
 
   horarioDelDia.forEach(hora => {
+    const hh = normalizarHoraTexto(hora);
     const bloque = document.createElement("div");
     bloque.classList.add("bloqueHora");
 
-    if (horasReservadas.includes(hora)) {
+    if (horasReservadasNorm.includes(hh)) {
       bloque.classList.add("horaOcupada");
-      bloque.textContent = `⛔ ${hora}`;
+      bloque.textContent = `⛔ ${hh}:00`;
     } else {
       bloque.classList.add("horaLibre");
-      bloque.textContent = ` ${hora}`;
+      bloque.textContent = ` ${hh}:00`;
       bloque.onclick = () => {
   // Verificación de modo Administrar: solo quien lo activó puede reservar
 
-  document.getElementById("hora").value = hora;
+  document.getElementById("hora").value = hh;
   fechaInput.value = fecha;
 
   ventanaHorarios.style.display = "none";
 
   //  Mostrar directamente el modal de autos
   document.getElementById("modal-autos").classList.remove("hidden");
-  mostrarBotonesMóvils(hora);
+  mostrarBotonesAutos(hh);
 };
 
 
@@ -3914,11 +3929,11 @@ function renderReservasDelDiaEnPanel(fecha) {
       });
 
       reservasDia.sort((a, b) => {
-        const [hA, mA] = String(a.hora).split(":").map(Number);
-        const [hB, mB] = String(b.hora).split(":").map(Number);
-        const totalA = hA * 60 + (isNaN(mA) ? Number(a.minutos) || 0 : mA);
-        const totalB = hB * 60 + (isNaN(mB) ? Number(b.minutos) || 0 : mB);
-        return totalA - totalB;
+        const hA = Number(normalizarHoraTexto(a.hora)) || 0;
+        const hB = Number(normalizarHoraTexto(b.hora)) || 0;
+        const mA = Number(a.minutos) || 0;
+        const mB = Number(b.minutos) || 0;
+        return (hA * 60 + mA) - (hB * 60 + mB);
       });
 
       if (reservasDia.length === 0) {
